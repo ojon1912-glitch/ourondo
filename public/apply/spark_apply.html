@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<!-- ★ VERSION v20251230_1 (apply 자동채움 스크립트 로드) -->
+<!-- ★ VERSION v20251230_2 (애드부스트/SEO 메타 + 개인정보 모달 중복 정리) -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로테이션 소개팅 신청 | 우리의 온도 - Spark</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+  <!-- ★ ADD: 애드부스트(로봇 수집/연관도) 최적화 메타 -->
+  <meta name="description" content="1:1 로테이션 소개팅, 우리의 온도 Spark 신청 페이지입니다. 신원 절차 확인과 연애관 탐구 게임으로 자연스럽게 대화가 이어집니다.">
+  <link rel="canonical" href="/apply/spark_apply.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="로테이션 소개팅 신청 | 우리의 온도 - Spark">
+  <meta property="og:description" content="파티형 1:1 로테이션 소개팅, 우리의 온도 Spark 신청 페이지입니다. 신원 절차 확인과 연애관 탐구 게임으로 자연스럽게 대화가 이어집니다.">
+  <meta property="og:url" content="/apply/spark_apply.html">
+  <meta property="og:image" content="/img/custom.jpg">
+</head>
+
+
+<body class="bg-gray-50">
+
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      if (typeof initHeader === "function") initHeader();
+      if (typeof applyLoginState === "function") applyLoginState();
+    })
+    .catch(err => console.warn("header load failed", err));
+</script>
+
+
+
+  <!-- 우리의 온도 일정표 Page Container -->
+  <section class="max-w-5xl mx-auto px-1 py-14">
+
+    <!-- Title -->
+    <h2 class="text-4xl font-bold text-center  mb-6 text-white">📅 일정표</h2>
+
+    <div class="grid grid-cols-1 gap-10">
+
+      <!-- Image -->
+      <div>
+        <img src="/img/schedule/2602_sche.png" class="rounded-xl shadow-md" alt="우리의온도 26년 1월 로테이션 소개팅 일정표 이미지">
+        <!-- ★ ADD: 일정표 텍스트 요약(로봇 이해/연관도 강화) -->
+        <div class="mt-4 text-gray-300 text-sm leading-relaxed">
+          <p class="font-semibold text-center  text-white mb-2">로테이션 소개팅 일정 안내</p>
+          <ul class="list-disc pl-5 text-transparent  text-right space-y-1">
+            <li>스파크 버전은 연애관탐구게임을 통한 로테이션 소개팅입니다.</li>
+            <li>여러 명의 이성과 1:1로 차례를 바꿔가며 자연스럽게 대화합니다.</li>
+            <li>상세한 회차 및 시간은 위 일정표 이미지를 참고해주세요.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <main class="max-w-4xl mx-auto px-2 py-10 text-white">
+
+    <h1 class="text-4xl text-white text-center  font-bold mb-4">🎈신청서</h1>
+
+
+
+    <!-- 신청 폼 -->
+    <form id="applyForm" class="space-y-10" enctype="multipart/form-data">
+
+      <!-- 상품 타입 (Spark=2) -->
+      <input type="hidden" name="product_type" value="2" />
+
+<div>
+  <label class="text-2xl block mb-2 font-semibold">
+    💓신청 버전
+  </label>
+
+  <input
+    type="text"
+    value="스파크(Spark)"
+    disabled
+    class="w-full p-3 rounded bg-gray-800 border text-xl border-gray-700 cursor-not-allowed"
+  />
+</div>
+
+      <!-- 신청 날짜 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓신청 날짜</label>
+        <input
+          type="date"
+          name="apply_date"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+        />
+      </div>
+
+      <!-- 성별 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓성별</label>
+        <select
+          name="gender"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+        >
+          <option value="">선택</option>
+          <option value="M">남성</option>
+          <option value="F">여성</option>
+        </select>
+      </div>
+
+      <!-- 이름 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓이름</label>
+        <input
+          type="text"
+          name="name"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="홍길동"
+        />
+      </div>
+
+      <!-- 출생년도 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓출생년도</label>
+        <label class="block mb-2 font-semibold">*연령 제한은 90년생까지잉며, 프로필 적합도 기준 충족 시 소수 예외 승인될 수 있습니다.</label>
+        <input
+          type="number"
+          name="birth_year"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="1995"
+        />
+      </div>
+
+      <!-- 키 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓키 (cm)</label>
+        <label class="block mb-2 font-semibold">* 남성분은 173cm 이상만 참여 가능합니다. <br/>
+        *현장 기준 미달 시 추후 참여가 제한됩니다. <br/>
+      *여성분들도 키 기재해주세요.</label>
+        <input
+          type="number"
+          name="height"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="175"
+        />
+      </div>
+
+      <!-- 연락처 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓연락처</label>
+        <input
+          type="text"
+          name="contact"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="010-1234-5678"
+        />
+      </div>
+
+      <!-- 직업 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓직업</label>
+        <label class="block mb-2 font-semibold">*대학(원)생인 경우, 대학(원)생이라고 적어주세요. <br/>
+        *남성분의 경우, 대학생(혹은 무직)은 참여 불가합니다.</label>
+        <input
+          type="text"
+          name="job"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="직업을 입력해주세요"
+        />
+      </div>
+
+      <!-- 직업 증명 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓직업 증명 파일 (1개)</label>
+        <input
+          type="file"
+          name="job_file"
+          accept="image/*,application/pdf"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+        />
+      </div>
+
+      <!-- MBTI -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓MBTI</label>
+        <input
+          type="text"
+          name="mbti"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="ENFP"
+        />
+      </div>
+
+      <!-- 유입경로 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓유입 경로</label>
+        <select
+          name="source"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+        >
+          <option value="">선택</option>
+          <option value="NAVER">네이버</option>
+          <option value="INSTAGRAM">인스타그램</option>
+          <option value="Recom">지인추천</option>
+          <option value="ETC">기타</option>
+        </select>
+      </div>
+
+
+      <!-- 사진 업로드 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓본인 사진 (2장 이상)</label>
+        <label class="block mb-2 font-semibold">*현재 본인과 가장 유사한 최근 사진을 최소 2장 이상 업로드해주세요. <br/> 
+        *실물이 사진과 많이 다른 경우 추후 재참여 불가합니다. <br/>
+      *클로즈업 된 셀카나 과한 보정이 들어간 사진은 반려 및 재요청 될 수 있습니다. <br/>
+    *소개팅 목적으로만 사용되며, 참여 승인이 안 된 분의 자료는 폐기됩니다.</label>
+        <input
+          type="file"
+          name="photos"
+          multiple
+          accept="image/*"
+          required
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+        />
+      </div>
+
+
+      <!-- 메시지 -->
+      <div>
+        <label class="text-2xl block mb-2 font-semibold">💓호스트에게 하고 싶은 말</label>
+        <textarea
+          name="message"
+          rows="4"
+          class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+          placeholder="자기소개나 요청사항을 적어주세요"
+        ></textarea>
+      </div>
+
+
+      <!-- 약관 동의 -->
+      <div class="flex items-start gap-3">
+        <input type="checkbox" name="agree" value="true" required class="mt-1" />
+        <div class="text-sm text-gray-300">
+          개인정보 처리방침 및 아래 약관에 동의합니다.
+          <!-- ★ CHANGED(v20251230_2): footer 모달과 id 중복 방지 -->
+          <button
+            type="button"
+            id="openPrivacyBtnApply"
+            class="ml-2 underline text-gray-200 hover:text-white"
+          >
+            보기
+          </button>
+          
+    
+      <p class="text-sm text-gray-300 pt-1">- 행사 진행 및 홍보를 목적으로 사진 및 영상 촬영이 이루어질 수 있으며, 외부 공개 시에는 개인 식별이 어려운 형태(블러 처리 등)로 활용됩니다.</p>
+      <p class="text-sm text-gray-300 pt-1">- 참여 승인 완료 후, 신청서 제출 기준 24시간 이내 개별 안내 연락을 드립니다. (당일 신청의 경우 1시간 이내 동일하게 연락드립니다.)</p>
+      <p class="text-sm text-gray-300 pt-1">- 행사 회차 시작 3일 전부터는 환불이 불가합니다.단, 정원 미달로 인해 다음 회차로 일정이 변경되는 경우는 예외로 합니다.</p>
+      <p class="text-sm text-gray-300 pt-1">- 행사 참여 시 본인 확인을 위한 신분증을 반드시 지참해 주시기 바랍니다.</p>
+      <p class="text-sm text-gray-300 pt-1">- 승인 거절 처리된 경우, 거절 사유를 따로 안내해드리지 않습니다.</p>
+      <p class="text-sm text-gray-300 pt-1">- 허위 정보 기재 등 사실과 다른 내용으로 타인을 기만하는 행위가 확인될 경우,
+블랙리스트에 등록되며 이후 서비스 재이용이 제한될 수 있습니다.</p>
+        </div>
+      </div>
+
+      <!-- ★ REMOVED(v20251230_2): 페이지 내 개인정보 모달(footer로 통일) START -->
+<!-- ★ REMOVED(v20251230_2): 페이지 내 개인정보 모달(footer로 통일) END -->
+
+      <!-- 신청 버튼 -->
+      <button
+        type="button"
+        id="applyBtn"
+        class="w-full bg-pink-500  text-3xl hover:bg-pink-600 text-white font-semibold py-3 rounded-full shadow"
+      >
+        신청하기
+      </button>
+
+      <p class="text-sm text-gray-400 text-center">
+        신청 후 아래 카카오톡으로 연락을 남겨주시면 담당자가 더 빠르게 확인하여 안내드립니다.
+      </p>
+
+    </form>
+
+    <!-- 문의 -->
+    <div class="text-center mt-10">
+      <p class="text-gray-400 text-sm">문의가 필요하신가요?</p>
+      <a
+        href="http://pf.kakao.com/_sDFgn/chat"
+        target="_blank"
+        class="inline-block mt-2 bg-yellow-400 text-black px-5 py-2 rounded-full font-semibold hover:bg-yellow-500 transition"
+      >
+        💬 카카오톡으로 문의하기
+      </a>
+    </div>
+
+  </main>
+
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => {
+    document.getElementById("footer").innerHTML = html;
+
+    // ★ ADD: footer 로드 후 개인정보 모달 이벤트 바인딩
+    const modal = document.getElementById("privacyModal");
+    const openBtn = document.getElementById("openPrivacyBtn");
+    const closeBtn = document.getElementById("closePrivacyBtn");
+
+    if (modal && openBtn && closeBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      });
+
+      closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      });
+    }
+  });
+</script>
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+<!-- ★ ADD: tm_user 자동채움 -->
+<script src="/js/apply-autofill.js"></script>
+
+<!-- ================= 신청 JS ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("applyBtn");
+  if (!btn) return alert("❌ 신청 버튼을 찾지 못했습니다.");
+
+  // ★ CHANGED(v20251230_2): 개인정보 모달은 footer로 통일
+  const applyPrivacyBtn = document.getElementById("openPrivacyBtnApply");
+  if (applyPrivacyBtn) {
+    applyPrivacyBtn.addEventListener("click", () => {
+      const modal = document.getElementById("privacyModal");
+      if (!modal) return;
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    });
+  }
+
+  btn.addEventListener("click", async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("로그인이 필요합니다.");
+
+      const form = document.getElementById("applyForm");
+      const formData = new FormData(form);
+
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return alert(data.error || "신청 실패");
+      }
+
+      alert("✅ 신청이 완료되었습니다!");
+      location.href = "/";
+    } catch (e) {
+      console.error(e);
+      alert("서버 오류");
+    }
+  });
+});
+</script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

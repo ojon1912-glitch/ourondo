@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마이페이지 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-xl mx-auto px-1 py-10">
+
+  <h1 class="text-3xl font-bold mb-6 text-white">마이페이지</h1>
+
+  <!-- 프로필 카드 -->
+  <div class="bg-zinc-900 p-6 rounded-lg shadow mb-8">
+    <div class="flex items-center space-x-4">
+      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400">
+        <span class="text-2xl">👤</span>
+      </div>
+      <div>
+        <div id="mypageName" class="text-xl font-bold text-white"></div>
+        <div id="mypageId" class="text-gray-400"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메뉴 리스트 -->
+  <div class="space-y-4">
+
+    <!-- 🔥 관리자 전용: 지원자 관리 -->
+    <a href="/mypage/apply.html"
+       id="adminApplyBtn"
+       class="hidden block bg-indigo-600 p-4 rounded-lg shadow hover:bg-indigo-700 transition text-white font-bold">
+      🛠️ 지원자 관리
+    </a>
+    <a href="/mypage/userapply.html"
+     class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white">
+      📄 지원 내역
+    </a>
+<!-- 
+    <a href="/mypage/password.html"
+       class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white">
+      🔐 비밀번호 변경
+    </a>
+-->
+    <a href="/mypage/mylist.html"
+       class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white">
+      📝 내가 쓴 QnA
+    </a>
+
+    <a href="/mypage/payments.html"
+       class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white" onclick="return false;">
+      💳 결제 내역 (준비중)
+    </a>
+
+
+<!-- 우측 하단 회원탈퇴 -->
+<div class="flex justify-end mt-10 ">
+  <a href="/mypage/delete.html"
+     class="text-xs text-gray-400 hover:text-gray-500 transition">
+    회원탈퇴
+  </a>
+</div>
+
+
+
+  </div>
+
+</main>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => (document.getElementById("footer").innerHTML = html));
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+
+<!-- 🔥 마이페이지 로직 (JWT + 관리자 분기) -->
+<script>
+(async function () {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    location.href = "/auth/login.html";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error("인증 실패");
+
+    const user = await res.json();
+
+    // 기본 유저 정보
+    document.getElementById("mypageName").textContent = user.user_name || "이름 없음";
+    document.getElementById("mypageId").textContent = "@" + user.user_id;
+
+    // 🔥 관리자면 지원자 관리 버튼 표시
+    if (user.is_admin === 1) {
+      document.getElementById("adminApplyBtn").classList.remove("hidden");
+    }
+
+  } catch (err) {
+    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+    localStorage.removeItem("token");
+    location.href = "/auth/login.html";
+  }
+})();
+</script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<!-- ★ VERSION v20251230_1 (애드부스트/SEO 메타 + 로테이션 소개팅 키워드 최적화) -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- ★ ADD: 애드부스트(로봇 수집/연관도) 최적화 메타 -->
+  <meta name="description" content="파티형 1:1 로테이션 소개팅, 우리의 온도. 신원 절차 확인과 미션/게임으로 자연스럽게 대화가 이어지는 소개팅을 제공합니다.">
+  <link rel="canonical" href="/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="로테이션 소개팅 | 우리의 온도">
+  <meta property="og:description" content="파티형 1:1 로테이션 소개팅, 우리의 온도. 신원 절차 확인과 미션/게임으로 자연스럽게 대화가 이어지는 소개팅을 제공합니다.">
+  <meta property="og:url" content="/">
+  <meta property="og:image" content="/img/premium.jpg">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "우리의 온도",
+      "url": "/",
+      "description": "파티형 1:1 로테이션 소개팅 서비스",
+      "brand": {
+        "@type": "Brand",
+        "name": "우리의 온도"
+      }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "우리의 온도",
+      "url": "/",
+      "description": "로테이션 소개팅 안내 및 신청"
+    }
+  </script>
+
+  <title>로테이션 소개팅 | 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="bg-zinc-900">
+
+<!-- 공통 Header -->
+<div id="header"></div>
+
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      // 헤더가 DOM에 들어간 후에 초기화
+      initHeader();
+      applyLoginState();   // ★ 로그인 상태 반영
+    });
+</script>
+
+
+  <!-- Hero Section // from-zinc-900 to-zinc-800 제거 -->
+  <section class="bg-gradient-to-r  text-white py-28 text-center">
+    <h2 class="text-4xl font-bold mb-4">지금 우리의 온도는 <br /> 몇 도일까요? </h2>
+    <p class="text-lg mb-8">파티처럼 재밌는 1:1 로테이션 소개팅🎉</p>
+
+    <a href="/products/index.html"
+      class="inline-block text-2xl bg-pink-500 text-white px-20 py-4 rounded-full hover:bg-pink-600">
+      구경하러가기👀
+    </a>
+  </section>
+
+
+
+  <!-- 서비스 이미지  -->
+
+  <section class="max-w-6xl mx-auto px-0 py-10">
+
+    <!-- Title 
+    <h2 class="text-4xl font-bold mb-8 text-white">일정표</h2>-->
+
+    <div class="grid grid-cols-1 md:grid-cols-1 gap-10">
+
+      <!-- Image -->
+      <div>
+        <img src="/img/main_serve.png" class="rounded-xl shadow-md" alt="우리의온도 서비스">
+      </div>
+      
+
+    </div>
+
+  </section>
+  
+<!-- Service Intro -->
+ <!-- 
+<section class="max-w-6xl mx-auto px-2 py-10">
+  <h3 class="text-3xl font-bold text-center mb-12 text-white">
+    
+  </h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-10 place-items-center">
+
+    
+    <div class="bg-white shadow-md rounded-full aspect-square w-64 flex items-center justify-center text-center p-8">
+      <div>
+        <h4 class="text-xl font-bold mb-3 text-gray-900">신원 절차 확인</h4>
+        <p class="text-gray-600 text-sm">
+          신원 검증을 통과한 진정성 있는 만남을 원하는 분들만 소개해드립니다.
+        </p>
+      </div>
+    </div>
+
+    
+    <div class="bg-white shadow-md rounded-full aspect-square w-64 flex items-center justify-center text-center p-8">
+      <div>
+        <h4 class="text-xl font-bold mb-3 text-gray-900">외모 검증</h4>
+        <p class="text-gray-600 text-sm">
+          최소한의 자기관리를 하는 사람들로 구성됩니다.
+        </p>
+      </div>
+    </div>
+
+    
+    <div class="bg-white shadow-md rounded-full aspect-square w-64 flex items-center justify-center text-center p-8">
+      <div>
+        <h4 class="text-xl font-bold mb-3 text-gray-900">미션</h4>
+        <p class="text-gray-600 text-sm">
+          미션지 혹은 게임을 통해 자연스럽게 연애관을 알아볼 수 있어요.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section> -->
+
+
+  <!-- 우리의 온도 일정표 Page Container -->
+  <section class="max-w-6xl mx-auto px-0 py-10">
+
+    <!-- Title -->
+    <h2 class="text-4xl font-bold mb-8 text-center text-white">💘일정표</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-1 gap-10">
+
+      <!-- Image -->
+      <div>
+        <img src="/img/schedule/2602_sche.png" class="rounded-xl shadow-md" alt="우리의온도 26년 1월 로테이션 소개팅 일정표 이미지">
+      
+      <!-- ★ ADD: 일정표 텍스트 요약(로봇 이해/연관도 강화) -->
+      <div class="mt-4 text-gray-300 text-sm leading-relaxed">
+        <p class="font-semibold text-white text-center mb-2">로테이션 소개팅 일정 안내</p>
+          <ul class="list-disc pl-5 text-transparent  text-right space-y-1">
+            <li>클래식 버전은 연애대화미션지를 통한 로테이션 소개팅입니다.</li>
+            <li>여러 명의 이성과 1:1로 차례를 바꿔가며 자연스럽게 대화합니다.</li>
+            <li>상세한 회차 및 시간은 위 일정표 이미지를 참고해주세요.</li>
+          </ul>
+      </div>
+      </div>
+      
+
+    </div>
+
+  </section>
+
+  <!-- Products Section -->
+  <section class=" py-10">
+    <div class="max-w-6xl mx-auto px-2">
+
+      <h3 class="text-4xl font-bold text-center mb-12 text-white">💘소개팅 안내</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        <!-- Classic 1 -->
+        <!-- div class=" bg-zinc-900 제거 -->
+        <div class=" p-8 rounded-xl shadow-md text-center">
+          <img src="/img/premium.jpg" class="rounded-lg mb-4" alt="프리미엄 소개팅" />
+          <h4 class="text-3xl font-bold mb-2 text-center text-white">📝Classic Ver.</h4>
+          <p class="text-pink-200 text-2xl  text-center mb-4">연애미션지로 클래식하게!<br/>자연스러운 우리의 대화</p>
+          <a href="/products/classic.html"
+            class="inline-block bg-pink-500 text-2xl  text-white px-5 py-2 rounded-full hover:bg-pink-600">
+            구경하기
+          </a>
+        </div>
+
+        <!-- Spark 2 -->
+        <!-- div class=" bg-zinc-900 제거 -->
+        <div class=" p-8 rounded-xl shadow-md text-center">
+          <img src="/img/custom.jpg" class="rounded-lg mb-4" alt="맞춤형 소개팅" />
+          <h4 class="text-3xl font-bold mb-2 text-center text-white">💥Spark Ver.</h4>
+          <p class="text-pink-200 text-2xl text-center mb-4">연애관탐구게임으로 <br/>스파크 튀는 우리의 대화</p>
+          <a href="/products/spark.html"
+            class="inline-block bg-pink-500 text-2xl text-white px-5 py-2 rounded-full hover:bg-pink-600">
+            구경하기
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+
+      // ★ ADD: footer 로드 후 개인정보 모달 이벤트 바인딩
+      const modal = document.getElementById("privacyModal");
+      const openBtn = document.getElementById("openPrivacyBtn");
+      const closeBtn = document.getElementById("closePrivacyBtn");
+
+      if (modal && openBtn && closeBtn) {
+        openBtn.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        });
+
+        closeBtn.addEventListener("click", () => {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        });
+      }
+    });
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+  
+
+</body>
+</html>

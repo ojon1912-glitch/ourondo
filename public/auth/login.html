@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- 공통 Header -->
+<div id="header"></div>
+
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      // 헤더가 DOM에 들어간 후에 초기화
+      initHeader();
+      applyLoginState();   // ★ 로그인 상태 반영
+    });
+</script>
+
+<!-- Login Form -->
+<section class="max-w-md mx-auto px-6 py-20 text-center">
+
+  <!-- ★ ADD: 서비스 인트로 -->
+  <h2 class="text-3xl font-bold mb-4 text-white">
+    우리의 온도에 오신 걸 환영해요!
+  </h2>
+
+  <!-- ★ ADD: 서비스 한 줄 설명 -->
+  <p class="text-gray-300 mb-10 leading-relaxed">
+    진지한 만남을 원하는 분들을 위한<br>
+     로테이션 소개팅 서비스
+  </p>
+
+  <!-- 기존 ID/PW 로그인 (미사용, 유지) -->
+  <!-- 
+  <h2 class="text-3xl font-bold mb-10 text-center">로그인</h2>
+ 
+  <div class="space-y-6">
+    <div>
+      <label class="block mb-1 text-gray-100">아이디</label>
+      <input
+        id="user_id"
+        type="text"
+        class="w-full px-4 py-3 border rounded-lg text-gray-900"
+        placeholder="아이디를 입력하세요"
+      />
+    </div>
+
+    <div>
+      <label class="block mb-1 text-gray-100">비밀번호</label>
+      <input
+        id="user_pw"
+        type="password"
+        class="w-full px-4 py-3 border rounded-lg text-gray-900"
+        placeholder="비밀번호를 입력하세요"
+      />
+    </div>
+
+    <button
+      id="loginBtn"
+      type="button"
+      class="w-full bg-pink-500 text-white py-3 rounded-lg text-lg hover:bg-pink-600"
+    >
+      로그인
+    </button>
+  </div>
+  -->
+
+  <!-- ★ ADD: 카카오 로그인 CTA -->
+  <div class="flex justify-center mb-8">
+    <a href="/auth/kakao"
+       class="bg-yellow-400 text-black px-20 py-3 rounded-full text-lg font-semibold hover:bg-yellow-300">
+      💬 카카오로 로그인
+    </a>
+  </div>
+
+  <!-- ★ ADD: 안심/설명 문구 -->
+  <div class="text-sm text-gray-400 space-y-1">
+    <p>✔ 신원 확인을 위한 로그인입니다</p>
+    <p>✔ 친구 목록, 게시물에는 접근하지 않습니다</p>
+    <p>✔ 언제든 회원탈퇴가 가능합니다</p>
+  </div>
+
+  
+  <!-- ★ ADD -->
+  <button
+    id="openPrivacyBtn"
+    class="text-sm text-gray-400 underline hover:text-white">
+    개인정보 처리방침 보기
+  </button>
+
+
+<!-- ★ ADD: 로그인 문제 문의 -->
+<div class="mt-6 text-center text-sm text-gray-400">
+  로그인에 문제가 있나요?<br>
+  <a
+    href="http://pf.kakao.com/_sDFgn/chat"
+    target="_blank"
+    class="underline hover:text-white"
+  >
+    카카오톡으로 문의해주세요
+  </a>
+</div>
+
+</section>
+
+<!-- ================= 개인정보 처리방침 모달 ================= -->
+
+<!-- ★ ADD -->
+<div
+  id="privacyModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
+
+  <div class="bg-white w-full max-w-3xl h-[80vh] rounded-lg shadow-lg flex flex-col">
+
+    <!-- 헤더 -->
+    <div class="px-6 py-4 border-b font-bold text-lg">
+      개인정보 처리방침
+    </div>
+
+    <!-- ★ CHANGED: iframe으로 privacy.html 로드 -->
+    <div class="flex-1">
+      <iframe
+        src="/components/privacy.html"
+        class="w-full h-full border-none"
+        title="개인정보 처리방침">
+      </iframe>
+    </div>
+
+    <!-- 하단 -->
+    <div class="px-6 py-4 border-t text-right">
+      <button
+        id="closePrivacyBtn"
+        class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+        닫기
+      </button>
+    </div>
+
+  </div>
+</div>
+
+</section>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+
+<!-- 기존 프론트 로그인 JS (미사용, 유지) -->
+<script>
+  document.getElementById("loginBtn")?.addEventListener("click", async () => {
+    const user_id = document.getElementById("user_id").value.trim();
+    const user_pw = document.getElementById("user_pw").value.trim();
+
+    if (!user_id || !user_pw) {
+      alert("아이디와 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id, user_pw }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "로그인 실패");
+        return;
+      }
+
+      alert(`로그인 성공! ${data.user.user_name || data.user.user_id} 님 환영합니다 🙂`);
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      location.href = "/";
+    } catch (err) {
+      console.error(err);
+      alert("서버 오류가 발생했습니다.");
+    }
+  });
+</script>
+
+
+<!-- ★ ADD -->
+<script>
+  const modal = document.getElementById("privacyModal");
+  const openBtn = document.getElementById("openPrivacyBtn");
+  const closeBtn = document.getElementById("closePrivacyBtn");
+
+  openBtn.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  });
+
+  closeBtn.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  });
+</script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

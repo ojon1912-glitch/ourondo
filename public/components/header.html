@@ -1,0 +1,138 @@
+<!-- ★ VERSION v20251230_1 (헤더 UI 오타 수정 + 로봇 친화 클래스 정리) -->
+<header class="bg-zink-900 shadow"><!-- ★ CHANGED(v20251230_1): bg-zink-900 오타 수정 -->
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+  <link rel="stylesheet" href="/style.css"><!-- ★ NOTE: 공통 컴포넌트 내 스타일 로드(추후 각 페이지 head로 이전 권장) -->
+    
+    <!-- 로고 -->
+    <div class="flex items-center">
+      <span
+        class="text-2xl font-bold text-white cursor-pointer"
+        onclick="location.href='/'"
+      >
+        💘Our Ondo
+      </span>
+    </div>
+
+    <!-- 데스크톱 메뉴 -->
+    <nav class="hidden md:flex space-x-6 text-gray-300 items-center">
+
+
+      <!-- 호스트 소개 -->
+      <a
+        href="/intro/index.html"
+        class="hover:text-white transition"
+      >
+        🧅호스트 소개
+      </a>
+      <!-- 소개팅 안내 -->
+      <a
+        href="/products/index.html"
+        class="hover:text-white transition"
+      >
+        💘소개팅 안내
+      </a>
+
+      <!-- QnA -->
+      <a
+        href="/qna/index.html"
+        class="hover:text-white transition"
+      >
+        ❓QnA
+      </a>
+
+      <!-- 마이페이지 -->
+      <a
+        href="/mypage/index.html"
+        class="hover:text-white transition hidden"
+        id="mypageMenu"
+      >
+        👤마이페이지
+      </a>
+
+      <!-- 로그인 -->
+      <a
+        href="/auth/login.html"
+        class="hover:text-white transition"
+        id="loginMenu"
+      >
+        🔑로그인
+      </a>
+
+      <!-- 로그아웃 -->
+      <button
+        id="logoutMenu"
+        class="hover:text-white transition hidden "
+        onclick="logout()"
+      >
+        💘로그아웃
+      </button>
+    </nav>
+
+    <!-- 모바일 햄버거 버튼 -->
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden inline-flex items-center justify-center p-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100"
+      type="button"
+      aria-label="메뉴 열기"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- 모바일 메뉴 -->
+  <nav id="mobile-menu" class="md:hidden hidden bg-zinc-900 border-t border-zinc-800">
+
+
+    <a
+      href="/intro/index.html"
+      class="block px-4 py-3 text-gray-100 hover:bg-zinc-800"
+    >
+      🧅호스트 소개
+    </a>
+    <a
+      href="/products/index.html"
+      class="block px-4 py-3 text-gray-100 hover:bg-zinc-800"
+    >
+      💘소개팅 안내
+    </a>
+    <a
+      href="/qna/index.html"
+      class="block px-4 py-3 text-gray-100 hover:bg-zinc-800"
+    >
+      ❓QnA
+    </a>
+
+    <a
+      href="/mypage/index.html"
+      class="hidden block px-4 py-3 text-gray-100 hover:bg-zinc-800"
+      id="mobileMypageMenu"
+    >
+      👤마이페이지
+    </a>
+
+    <a
+      href="/auth/login.html"
+      class="block px-4 py-3 text-gray-100 hover:bg-zinc-800"
+      id="mobileLoginMenu"
+    >
+      🔑로그인
+    </a>
+
+    <!-- 로그아웃 -->
+     <!-- ★ CHANGED(v20251230_1): text-ray-100 오타 수정 --> 
+    <button
+      id="mobileLogoutMenu"
+      class="hidden block w-full text-left px-4 py-3 text-gray-100 hover:bg-zinc-800" 
+      
+      onclick="logout()"
+    >
+      💘로그아웃
+    </button>
+
+  </nav>
+</header>
+<script src="/js/authguard.js"></script>

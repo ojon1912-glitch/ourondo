@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>우리의 온도 소개 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-zinc-900 text-white">
+
+  <!-- 공통 Header -->
+  <div id="header"></div>
+  <script src="/js/layout.js"></script>
+  <script>
+    fetch("/components/header.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("header").innerHTML = html;
+        initHeader();
+        applyLoginState();
+      });
+  </script>
+
+  <!-- HERO -->
+  <section class="max-w-6xl mx-auto px-1 pt-16 pb-10">
+   <!-- <div class="rounded-2xl border border-zinc-700 bg-zinc-900/60 p-10 md:p-14 shadow-lg"> -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-10">
+        <div class="max-w-2xl">
+          <p class="text-sm text-zinc-300">INTRO • OURONDO</p>
+          <h1 class="mt-3 text-4xl md:text-5xl font-extrabold leading-tight text-gray-100">
+            <!-- TODO: 메인 카피 -->
+            호스트 소개
+          </h1>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            안녕하세요, 우리의온도 호스트 양파쿵야에요!
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            소개팅이 어색하고, 파티는 부담스럽게 느껴지는 분들 많으실거라 생각해요.
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            저는 그 중간 어딘가에 있는 자연스럽고 재밌는 ‘진짜’ 만남을 만들고 싶었어요.
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            우리의온도에 오셨던 분들께서 이런 말씀을 많이 해주세요.
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+“저 스스로도 몰랐던 저에 대해 알아갈 수 있는 뜻깊은 시간이었어요.”
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            연애를 하려면 본인을 먼저 알아야 한다고 하잖아요.
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+나는 어떤 성향의, 
+            어떤 가치관을 지닌 사람인지 정확히 알아야
+나에게 어울리는 인연을 만날 수 있다고 생각해요.
+
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            저는 무엇보다 이 부분에 기획의 초점을 맞추었어요.
+          </p>
+          <p class="mt-5 text-zinc-300 leading-relaxed">
+우리의온도에서 단순한 이성간의 만남이 아닌
+진짜 나를 알아갈 수 있는 시간을 보내실 거에요.
+          </p>
+                    <p class="mt-5 text-zinc-300 leading-relaxed">
+            <!-- TODO: 서브 카피 -->
+            그래서 제가 직접 모든 걸 기획하고 진행하며
+더 나은 여러분의 ‘진짜’ 만남을 위해 달려가고 있답니다!
+          </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-3">
+            <a href="/products/index.html"
+               class="inline-flex justify-center items-center rounded-full bg-pink-500 px-6 py-3 font-semibold hover:bg-pink-600 transition">
+              상품 보기
+            </a>
+            <a href="/qna/index.html"
+               class="inline-flex justify-center items-center rounded-full border border-zinc-700 px-6 py-3 font-semibold text-zinc-200 hover:bg-zinc-800 transition">
+              Q&A 보기
+            </a>
+          </div>
+
+          <div class="mt-8 flex flex-wrap gap-2 text-xs text-zinc-400">
+            <span class="px-3 py-1 rounded-full border border-zinc-700"># 로테이션 소개팅</span>
+            <span class="px-3 py-1 rounded-full border border-zinc-700"># 파티형 소개팅</span>
+            <span class="px-3 py-1 rounded-full border border-zinc-700"># 오프라인</span>
+            <span class="px-3 py-1 rounded-full border border-zinc-700"># 신뢰</span>
+          </div>
+        </div>
+
+        <!-- 오른쪽 비주얼(이미지 자리) -->
+        <div class="w-full md:w-[420px]">
+          <div class="rounded-2xl border border-zinc-700 bg-zinc-800/60 p-6">
+            <div class="aspect-[4/5] rounded-xl bg-zinc-700/40 flex items-center justify-center text-zinc-300">
+              
+          <img src="/img/host_img.jpg" class="rounded-lg mb-4" alt="우리의 온도 Host" />
+            </div>
+           
+          </div>
+        </div>
+     <!--  </div> -->
+    </div>
+  </section>
+
+
+
+  <!-- Footer -->
+  <div id="footer"></div>
+  <script>
+    fetch("/components/footer.html")
+      .then(res => res.text())
+      .then(html => (document.getElementById("footer").innerHTML = html));
+  </script>
+  
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+
+  <!-- body 설정 (쓰고 있으면 유지) -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

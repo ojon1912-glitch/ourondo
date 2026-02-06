@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QnA 글쓰기 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-3xl mx-auto px-1 py-10">
+  <h1 class="text-3xl font-bold mb-6 text-white">QnA 글쓰기</h1>
+
+  <div class="space-y-5 bg-zinc-800 p-6 rounded shadow">
+  
+    <div>
+      <label class="font-semibold">제목</label>
+      <input id="title" type="text"
+        class="bg-zinc-800 w-full border p-3 rounded mt-1"
+        placeholder="제목을 입력하세요">
+    </div>
+
+    <div>
+      <label class="font-semibold">내용</label>
+      <textarea id="content"
+        class="bg-zinc-800 w-full border p-3 rounded mt-1 h-40"
+        placeholder="내용을 입력하세요"></textarea>
+    </div>
+
+    <label class="flex items-center space-x-2">
+      <input type="checkbox" id="is_secret">
+      <span>비밀글로 작성</span>
+    </label>
+
+    <button id="submitBtn"
+      class="w-full bg-pink-500 text-white py-3 rounded hover:bg-pink-600">
+      등록하기
+    </button>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<script>
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const title = document.getElementById("title").value.trim();
+  const content = document.getElementById("content").value.trim();
+  const is_secret = document.getElementById("is_secret").checked ? 1 : 0;
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    return location.href = "/auth/login.html";
+  }
+
+  const res = await fetch("/api/qna", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ title, content, is_secret })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "등록 실패");
+    return;
+  }
+
+  location.href = `/qna/view.html?qna_seq=${data.qna_seq}`;
+});
+</script>
+
+
+  <!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QnA - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- 공통 Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-3xl mx-auto px-1 py-10">
+  <h1 class="text-4xl font-bold mb-6 text-white">QnA</h1>
+      <h2 class="text-2xl font-bold">자주 묻는 질문</h2>
+      <div class="mt-6 space-y-3">
+        <details class="rounded-xl border border-zinc-700 bg-zinc-900/60 p-5">
+          <summary class="cursor-pointer font-semibold">혼자가도 괜찮을까요?</summary>
+          <p class="mt-3 text-zinc-300 text-sm">친구분과 함께 오셔도 무방하나 대부분 혼자 오세요!</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>1:1로 진행되는 콘텐츠라는 점에서</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>부담이 되실 수도 있겠지만 걱정마세요!</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>호스트 리드에 잘 따라와주신다면</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>어색함은 금방 사라지고 즐거운 시간을 보내실 수 있을거에요.</p>
+        </details>
+        <details class="rounded-xl border border-zinc-700 bg-zinc-900/60 p-5">
+          <summary class="cursor-pointer font-semibold">재참여 가능할까요?</summary>
+          <p class="mt-3 text-zinc-300 text-sm">그럼요! 저희 소개팅은 재방문율이 굉장히 높은 편이랍니다!</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>처음 보는 이성과도 편안하면서도 설렘은 놓치지 않고 만남을 가질 수 있거든요.</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>다만 첫 방문 때, 제출해주신 사진과 너무 다르다면</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>(남성분의 경우, 키를 허위로 적어 제출하신 경우 포함)</p>
+<p class="mt-3 text-zinc-300 text-sm"></p>재방문에 제한이 있을 수 있어요.</p>
+        </details>
+      </div>
+  <div class="flex justify-end mb-4 py-5">
+    <a href="/qna/write.html"
+      class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">
+      글쓰기
+    </a>
+  </div>
+
+  <ul id="qnaList" class="divide-y divide-gray-200 bg-zinc-900 rounded shadow">
+    <li class="p-4 text-center text-gray-400">불러오는 중...</li>
+  </ul>
+</main>
+
+<!-- 공통 Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<script>
+fetch("/api/qna")
+  .then(res => res.json())
+  .then(list => {
+    const ul = document.getElementById("qnaList");
+    ul.innerHTML = "";
+    if (list.length === 0) {
+      ul.innerHTML = `<li class="p-4 text-gray-500 text-center">등록된 글이 없습니다.</li>`;
+      return;
+    }
+
+    list.forEach(item => {
+      const isSecret = item.is_secret === 1;
+      const li = document.createElement("li");
+      li.className = "p-4 hover:bg-gray-600 cursor-pointer";
+
+      li.innerHTML = `
+        <a href="/qna/view.html?qna_seq=${item.qna_seq}">
+          <div class="font-semibold">
+            ${isSecret ? "🔒 비밀글입니다" : item.title}
+          </div>
+          <div class="text-sm text-gray-500">
+            ${item.user_name || item.user_id} · 
+            ${new Date(item.cre_dtime).toLocaleString()}
+          </div>
+        </a>
+      `;
+      ul.appendChild(li);
+    });
+  });
+</script>
+
+
+  <!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

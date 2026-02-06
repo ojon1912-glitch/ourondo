@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QnA 상세 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+
+<main class="max-w-3xl mx-auto px-1 py-10">
+
+  <a href="/qna/index.html" class="text-gray-600 underline">&larr; 목록으로</a>
+
+  <!-- 제목 -->
+  <h1 id="qnaTitle" class="text-3xl font-bold mt-4 mb-2 text-white"></h1>
+
+  <!-- 작성자 / 날짜 -->
+  <div id="qnaMeta" class="text-gray-300 mb-6"></div>
+
+  <!-- 수정/삭제 버튼 (작성자만) -->
+  <div id="qnaOwnerBtns" class="hidden space-x-2 mb-4">
+    <button id="editQnaBtn"
+      class="px-3 py-1 bg-blue-500 text-white rounded">수정</button>
+    <button id="deleteQnaBtn"
+      class="px-3 py-1 bg-red-500 text-white rounded">삭제</button>
+  </div>
+
+  <!-- 본문 -->
+  <div id="qnaContent"
+       class="bg-zinc-800 p-6 rounded shadow whitespace-pre-line mb-10 min-h-[120px]"></div>
+
+
+  <!-- 답변 리스트 -->
+  <h2 class="text-2xl font-bold mb-3">답변</h2>
+  <div id="replyList" class="space-y-4 mb-8"></div>
+
+  <!-- 답변 작성 UI (관리자만) -->
+  <div id="replyWriteBox" class="hidden bg-zinc-900 p-5 rounded shadow">
+    <textarea id="replyContent"
+      class="w-full border p-3 rounded mb-3 h-28 text-black"
+      placeholder="답변 내용을 입력하세요"></textarea>
+
+    <button id="replySubmit"
+      class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">
+      답변 등록
+    </button>
+  </div>
+
+</main>
+
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => (document.getElementById("footer").innerHTML = html));
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<script>
+/* =============================
+   기본 상태
+============================= */
+
+const params = new URLSearchParams(location.search);
+const qna_seq = params.get("qna_seq");
+
+const token = localStorage.getItem("token");
+
+const loginUser = localStorage.getItem("user")
+  ? JSON.parse(localStorage.getItem("user"))
+  : null;
+
+const isAdmin = loginUser && loginUser.is_admin == 1;
+
+
+/* =============================
+   QnA 상세 불러오기
+============================= */
+
+fetch(`/api/qna/${qna_seq}`, {
+  headers: token ? { Authorization: `Bearer ${token}` } : {}
+})
+  .then(res => res.json())
+  .then(data => {
+
+    // 제목
+    document.getElementById("qnaTitle").textContent = data.title;
+
+    // 메타 정보
+    document.getElementById("qnaMeta").textContent =
+      `${data.user_name || data.user_id} · ` +
+      new Date(data.cre_dtime).toLocaleString();
+
+    // 내용
+    document.getElementById("qnaContent").textContent = data.content;
+
+    /* ========= 작성자 → 수정/삭제 버튼 표시 ========== */
+    if (loginUser && loginUser.user_seq == data.user_seq) {
+      document.getElementById("qnaOwnerBtns").classList.remove("hidden");
+    }
+
+    /* ========= 답변 리스트 렌더링 ========== */
+    const replyList = document.getElementById("replyList");
+    replyList.innerHTML = "";
+
+    data.replies.forEach(reply => {
+      const div = document.createElement("div");
+      div.className = "bg-zinc-900 p-4 rounded shadow";
+
+      div.innerHTML = `
+        <div class="text-sm text-gray-600 mb-1">
+          ${reply.user_name || reply.user_id} · ${new Date(reply.cre_dtime).toLocaleString()}
+        </div>
+        <div class="whitespace-pre-line">${reply.content}</div>
+
+        ${
+          loginUser && loginUser.user_seq == reply.user_seq
+            ? `
+              <div class="flex space-x-2 mt-3">
+                <button class="reply-edit px-2 py-1 bg-blue-500 text-white rounded"
+                        data-id="${reply.qna_reply_seq}">수정</button>
+                <button class="reply-del px-2 py-1 bg-red-500 text-white rounded"
+                        data-id="${reply.qna_reply_seq}">삭제</button>
+              </div>
+            `
+            : ""
+        }
+      `;
+
+      replyList.appendChild(div);
+    });
+
+    /* ========= 관리자만 답변 작성 가능 ========== */
+    if (token && isAdmin) {
+      document.getElementById("replyWriteBox").classList.remove("hidden");
+    }
+
+  });
+
+
+
+/* =============================
+   QnA 삭제
+============================= */
+
+document.addEventListener("click", (e) => {
+  if (e.target.id !== "deleteQnaBtn") return;
+
+  if (!confirm("정말 삭제하시겠습니까?")) return;
+
+  fetch(`/api/qna/${qna_seq}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.message);
+      location.href = "/qna/index.html";
+    });
+});
+
+
+/* =============================
+   QnA 수정
+============================= */
+
+document.addEventListener("click", (e) => {
+  if (e.target.id !== "editQnaBtn") return;
+
+  const newContent = prompt("수정할 내용을 입력하세요:");
+  if (!newContent) return;
+
+  fetch(`/api/qna/${qna_seq}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ content: newContent })
+  })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.message);
+      location.reload();
+    });
+});
+
+
+/* =============================
+   답변 작성 (관리자만)
+============================= */
+
+document.getElementById("replySubmit").addEventListener("click", async () => {
+
+  if (!isAdmin) {
+    alert("관리자만 답변 작성이 가능합니다.");
+    return;
+  }
+
+  const content = document.getElementById("replyContent").value.trim();
+  if (!content) {
+    alert("내용을 입력하세요.");
+    return;
+  }
+
+  const res = await fetch(`/api/qna/${qna_seq}/reply`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ content })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "등록 실패");
+    return;
+  }
+
+  alert("답변이 등록되었습니다.");
+  location.reload();
+});
+
+
+/* =============================
+   답변 수정
+============================= */
+
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("reply-edit")) return;
+
+  const replyId = e.target.dataset.id;
+  const newContent = prompt("수정할 내용을 입력하세요:");
+  if (!newContent) return;
+
+  fetch(`/api/qna/reply/${replyId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ content: newContent })
+  })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.message);
+      location.reload();
+    });
+});
+
+
+/* =============================
+   답변 삭제
+============================= */
+
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("reply-del")) return;
+
+  const replyId = e.target.dataset.id;
+
+  if (!confirm("답변을 삭제하시겠습니까?")) return;
+
+  fetch(`/api/qna/reply/${replyId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.message);
+      location.reload();
+    });
+});
+
+</script>
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

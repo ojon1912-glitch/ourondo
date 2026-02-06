@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<!-- ★ VERSION v20251230_1 (애드부스트/SEO 메타 + 로테이션 소개팅 키워드 최적화 + 오타 수정) -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로테이션 소개팅 안내 - 우리의 온도</title>
+
+  <!-- ★ ADD: 애드부스트(로봇 수집/연관도) 최적화 메타 -->
+  <meta name="description" content="로테이션 소개팅, 우리의 온도. Classic/Spark 두 가지 버전의 파티형 1:1 로테이션 소개팅을 안내합니다.">
+  <link rel="canonical" href="/products/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="로테이션 소개팅 안내 | 우리의 온도">
+  <meta property="og:description" content="로테이션 소개팅, 우리의 온도. Classic/Spark 두 가지 버전의 파티형 1:1 로테이션 소개팅을 안내합니다.">
+  <meta property="og:url" content="/products/index.html">
+  <meta property="og:image" content="/img/premium.jpg">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "로테이션 소개팅 안내 - 우리의 온도",
+      "url": "/products/index.html",
+      "description": "Classic/Spark 두 가지 버전의 파티형 1:1 로테이션 소개팅 안내"
+    }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="bg-zinc-900">
+
+
+<!-- 공통 Header -->
+<div id="header"></div>
+
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      // 헤더가 DOM에 들어간 후에 초기화
+      initHeader();
+      applyLoginState();   // ★ 로그인 상태 반영
+    });
+</script>
+
+
+  <!-- Title -->
+  <section class="text-center py-16">
+    <h2 class="text-4xl font-bold mb-4 text-white">💘소개팅 안내</h2>
+    <p class="text-gray-300 mt-3"> <span class="text-2xl font-semibold text-pink-200">로테이션 소개팅, <br />  
+    <p class="text-2xl text-pink-200">나에게 맞는 버전은 무엇일까요?</p>
+    <!-- ★ ADD: 로봇 이해용 핵심 키워드 텍스트 -->
+  </section>
+
+  <!-- Product List -->
+  <section class="max-w-6xl mx-auto text-center px-1 pb-20">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+      <!-- Product Card 1 -->
+      <div class=" p-8 rounded-xl shadow-md hover:shadow-lg transition"><!-- ★ CHANGED(v20251230_1): bg-zink-900 오타 수정 -->
+        <img src="/img/premium.jpg" alt="프리미엄 소개팅" class="rounded-lg mb-4" />
+          <h4 class="text-3xl font-bold mb-2 text-center text-white">📝Classic Ver.</h4>
+          <p class="text-pink-200 text-2xl  text-center mb-4">연애미션지로 클래식하게!<br/>자연스러운 우리의 대화</p>
+        <button
+          onclick="location.href='/products/classic.html'"
+          class="bg-pink-500 text-2xl text-white px-5 py-2 rounded-full hover:bg-pink-600 transition">
+          구경하기
+        </button>
+      </div>
+
+      <!-- Product Card 2 -->
+      <div class=" p-8 rounded-xl shadow-md hover:shadow-lg transition"><!-- ★ CHANGED(v20251230_1): bg-zink-900 오타 수정 -->
+        <img src="/img/custom.jpg" alt="맞춤형 소개팅" class="rounded-lg mb-4" />
+
+        <h4 class="text-3xl font-bold mb-2 text-center text-white">💥Spark Ver.</h4>
+        <p class="text-pink-200 text-2xl text-center mb-4">연애관탐구게임으로 <br/>스파크 튀는 우리의 대화</p>
+        <button
+          onclick="location.href='/products/spark.html'"
+          class="bg-pink-500 text-2xl text-white px-5 py-2 rounded-full hover:bg-pink-600 transition">
+          구경하기
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  
+  
+
+  <!-- ✅ Photo Slider -->
+<section class="max-w-3xl mx-auto px-2 py-12">
+  <h2 class="text-4xl text-center font-bold mb-6 text-white"><!-- ★ CHANGED(v20251230_1): 다크 배경 가독성 -->
+    💘Classic vs Spark
+  </h2>
+
+  <div class="relative rounded-2xl border border-zinc-700 bg-zinc-900/40 overflow-hidden">
+
+    <!-- 트랙 -->
+    <div id="sliderTrack" class="flex transition-transform duration-300 ease-out select-none"
+         style="touch-action: pan-y;">
+      <!-- ✅ 여기 이미지 경로만 바꿔서 추가 -->
+      <div class="min-w-full">
+        <img src="/img/vs/vs1.jpg" class="w-full h-full object-cover" alt="slide1">
+      </div>
+      <div class="min-w-full">
+        <img src="/img/vs/vs2.jpg" class="w-full h-full object-cover" alt="slide2">
+      </div>
+      <div class="min-w-full">
+        <img src="/img/vs/vs3.jpg" class="w-full h-full object-cover" alt="slide3">
+      </div>
+    </div>
+
+    <!-- 이전/다음 버튼 -->
+    <button id="prevBtn"
+      class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 hover:bg-black/60 border border-zinc-700 px-4 py-2 text-sm text-white"><!-- ★ CHANGED(v20251230_1) -->
+      ◀
+    </button>
+    <button id="nextBtn"
+      class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 hover:bg-black/60 border border-zinc-700 px-4 py-2 text-sm text-white"><!-- ★ CHANGED(v20251230_1) -->
+      ▶
+    </button>
+
+    <!-- 인디케이터 -->
+    <div id="dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"></div>
+  </div>
+</section>
+
+
+  <!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+
+  
+  <script>
+(function initSlider(){
+  const track = document.getElementById("sliderTrack");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const dotsWrap = document.getElementById("dots");
+
+  if (!track || !prevBtn || !nextBtn || !dotsWrap) return;
+
+  const slides = Array.from(track.children);
+  let index = 0;
+
+  // ✅ dots 생성
+  dotsWrap.innerHTML = slides.map((_, i) => `
+    <button class="dot w-2.5 h-2.5 rounded-full border border-zinc-400 ${i===0 ? 'bg-white' : 'bg-transparent'}"
+      aria-label="go to slide ${i+1}" data-idx="${i}"></button>
+  `).join("");
+
+  const dots = Array.from(dotsWrap.querySelectorAll(".dot"));
+
+  function update() {
+    track.style.transform = `translateX(-${index * 100}%)`;
+    dots.forEach((d, i) => {
+      d.classList.toggle("bg-white", i === index);
+      d.classList.toggle("bg-transparent", i !== index);
+    });
+  }
+
+  function go(nextIndex) {
+    index = (nextIndex + slides.length) % slides.length;
+    update();
+  }
+
+  prevBtn.addEventListener("click", () => go(index - 1));
+  nextBtn.addEventListener("click", () => go(index + 1));
+
+  dotsWrap.addEventListener("click", (e) => {
+    const btn = e.target.closest(".dot");
+    if (!btn) return;
+    go(Number(btn.dataset.idx));
+  });
+
+  // ✅ 드래그/스와이프 지원
+  let isDown = false;
+  let startX = 0;
+  let currentX = 0;
+
+  track.addEventListener("pointerdown", (e) => {
+    isDown = true;
+    startX = e.clientX;
+    currentX = startX;
+    track.classList.remove("transition-transform");
+    track.setPointerCapture(e.pointerId);
+  });
+
+  track.addEventListener("pointermove", (e) => {
+    if (!isDown) return;
+    currentX = e.clientX;
+    const diff = currentX - startX; // +면 오른쪽으로 드래그
+    const percent = (diff / track.clientWidth) * 100;
+    track.style.transform = `translateX(calc(-${index * 100}% + ${percent}%))`;
+  });
+
+  track.addEventListener("pointerup", () => {
+    if (!isDown) return;
+    isDown = false;
+    track.classList.add("transition-transform");
+
+    const diff = currentX - startX;
+    const threshold = track.clientWidth * 0.2; // 20% 이상 드래그하면 이동
+
+    if (diff > threshold) go(index - 1);
+    else if (diff < -threshold) go(index + 1);
+    else update();
+  });
+
+  track.addEventListener("pointercancel", () => {
+    isDown = false;
+    track.classList.add("transition-transform");
+    update();
+  });
+
+  update();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ★ VERSION v20251230_2 (운영 도메인 ourondo.fly.dev 반영) -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ourondo.fly.dev/</loc></url>
+  <url><loc>https://ourondo.fly.dev/products/index.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/products/classic.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/products/spark.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/apply/classic_apply.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/apply/spark_apply.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/qna/index.html</loc></url>
+  <url><loc>https://ourondo.fly.dev/components/privacy.html</loc></url>
+</urlset>

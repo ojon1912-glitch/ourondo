@@ -1,0 +1,106 @@
+<!-- Footer -->
+<!-- ★ VERSION v20251230_1 (footer 오타/불필요 텍스트 정리 + 개인정보 모달 유지) -->
+<!-- ★ VERSION v20260120_1 (footer에 사업자 정보 문구 추가) -->
+<!-- ★ VERSION v20260120_2 (footer 사업자 정보 탭 간격 정렬 적용) -->
+<!-- ★ VERSION v20260120_3 (footer 사업자 정보 가로 배치로 세로 길이 축소) -->
+<footer class="bg-gray-800 text-gray-300  text-xs text-center py-3">
+  © 2026 우리의 온도 소개팅. All rights reserved.          
+
+  <!-- ★ ADD: 사업자 정보 -->
+  <!-- ★ REMOVED(v20260120_3): 탭처럼 보이도록 2열 정렬 -->
+  <!--
+  <div class="mt-2 text-gray-400">
+    <div class="mx-auto inline-block text-left">
+      <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 leading-relaxed">
+        <div class="text-gray-500">상호명</div><div>우리의 온도</div>
+        <div class="text-gray-500">사업자</div><div>358-02-03574</div>
+        <div class="text-gray-500">연락처</div><div>01033641725</div>
+        <div class="text-gray-500">주소</div><div>서울특별시 관악구 봉천로49길12, 지하1층</div>
+        <div class="text-gray-500">대표자명</div><div>이고운</div>
+        <div class="text-gray-500">통신판매신고번호</div><div>제 2026-서울관악-0174 호</div>
+      </div>
+    </div>
+  </div>
+  -->
+
+  <!-- ★ CHANGED(v20260120_3): 가로 배치 + 자동 줄바꿈(반응형) -->
+  <div class="mt-2 text-gray-400">
+    <div class="mx-auto flex flex-wrap justify-center gap-x-4 gap-y-1 leading-relaxed">
+      <span><span class="text-gray-500">상호명</span> 우리의 온도</span>
+      <span class="text-gray-600">·</span>
+      <span><span class="text-gray-500">사업자</span> 358-02-03574</span>
+      <span class="text-gray-600">·</span>
+      <span><span class="text-gray-500">연락처</span> 01033641725</span>
+      <span class="text-gray-600">·</span>
+      <span><span class="text-gray-500">대표자명</span> 이고운</span>
+      <span class="text-gray-600">·</span>
+      <span><span class="text-gray-500">통신판매신고번호</span> 제 2026-서울관악-0174 호</span>
+      <span class="text-gray-600">·</span>
+      <span><span class="text-gray-500">주소</span> 서울특별시 관악구 봉천로49길12, 지하1층</span>
+    </div>
+  </div>
+
+<!-- ★ ADD: 카카오톡 문의 버튼 -->
+<!--
+<div class="mt-3 flex justify-center">
+  <a
+    href="https://pf.kakao.com/_채널아이디/chat"
+    target="_blank"
+    class="inline-flex text-xs items-center gap-2 bg-yellow-400 text-black px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-yellow-500 transition"
+  >
+    💬 카카오톡 문의하기
+  </a>
+</div>
+-->
+<!-- ★ ADD: 카카오 플로팅 버튼 -->
+<a
+  href="http://pf.kakao.com/_sDFgn/chat"
+  target="_blank"
+  class="fixed bottom-6 right-6 bg-yellow-400 text-black px-4 py-3 rounded-full shadow-lg hover:bg-yellow-500 z-50"
+>
+  💬 카톡 문의
+</a>
+
+  <!-- 개인정보 처리방침 버튼 -->
+  <!-- ★ ADD -->
+  <button
+    id="openPrivacyBtn"
+    class="block mx-auto mt-2 text-right text-xs text-gray-400 underline hover:text-white">
+    개인정보 처리방침 보기
+  </button>
+</footer>
+
+<!-- ================= 개인정보 처리방침 모달 ================= -->
+<!-- ★ ADD -->
+<div
+  id="privacyModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
+
+  <div class="bg-white w-11/12 md:w-3/4 max-w-3xl rounded-xl overflow-hidden shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h3 class="text-lg font-bold text-gray-900">개인정보 처리방침</h3>
+      <button
+        id="closePrivacyBtn"
+        class="text-gray-600 hover:text-gray-900 text-2xl leading-none">
+        ×
+      </button>
+    </div>
+
+    <div class="p-0 bg-gray-100" style="height: 70vh;">
+      <iframe
+        src="/components/privacy.html"
+        class="w-full h-full border-none"
+        title="개인정보 처리방침">
+      </iframe>
+    </div>
+
+    <div class="px-6 py-4 border-t text-right">
+      <button
+        id="closePrivacyBtn"
+        class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+        닫기
+      </button>
+    </div>
+
+  </div>
+</div>

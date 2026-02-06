@@ -1,0 +1,43 @@
+/* ================= 폰트 등록 ================= */
+@font-face {
+    font-family: 'MemomentKkukkukk';
+    src: url('/font/MemomentKkukkukk.otf') format('opentype'),
+         url('/font/MemomentKkukkukk.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* ================= 기본 스타일 ================= */
+body {
+    font-family: 'MemomentKkukkukk', Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 40px;
+}
+
+h1 {
+    color: #333;
+}
+
+.input-box {
+    margin-bottom: 20px;
+}
+
+#todo-input {
+    padding: 10px;
+    width: 250px;
+}
+
+#add-btn {
+    padding: 10px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+#todo-list li {
+    background: white;
+    padding: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 4px;
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 중 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- 공통 Header -->
+<div id="header"></div>
+
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<!-- 처리 중 안내 -->
+<section class="max-w-md mx-auto px-6 py-32 text-center">
+  <h2 class="text-2xl font-bold text-white mb-4">
+    카카오 로그인 처리 중입니다
+  </h2>
+  <p class="text-gray-300">
+    잠시만 기다려 주세요…
+  </p>
+</section>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+
+<!-- 카카오 로그인 처리 로직 -->
+<script src="/js/auth.js"></script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

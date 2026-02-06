@@ -1,0 +1,124 @@
+<!-- 리뷰 섹션 -->
+<section class="max-w-5xl mx-auto px-2 py-16">
+  <h3 class="text-2xl font-bold mb-6">리뷰 ⭐</h3>
+  <div id="reviewList" class="space-y-4"></div>
+
+  <div class="text-center mt-6">
+    <button id="loadMoreBtn" class="text-pink-500 font-semibold hover:text-pink-600">
+      더보기 ▼
+    </button>
+  </div>
+
+  <div id="pagination" class="flex justify-center mt-6 space-x-2"></div>
+</section>
+
+
+<!-- 리뷰 스크립트  -->
+  <script>
+  // ★ 리뷰 데이터를 이 배열에 넣으면 자동 처리됨
+  <!--
+  const reviews = [
+    { name: "홍길동", text: "정말 재미있는 소개팅이었어요!" },
+    { name: "김유진", text: "자연스럽게 대화가 이어졌어요." },
+    { name: "박서준", text: "참가자들이 매너가 좋네요!" },
+    { name: "이지은", text: "다음에 또 참여하고 싶어요!" },
+    { name: "최민호", text: "정말 감동이었습니다." },
+    { name: "이영희", text: "대화가 너무 즐거웠어요!" },
+    { name: "박민수", text: "너무 좋은 분들과 만났어요!" },
+    { name: "서지우", text: "추천합니다!" },
+    { name: "한예린", text: "정말 좋은 경험이었어요." },
+    { name: "최지훈", text: "매칭이 잘 되었어요." },
+    { name: "윤소희", text: "후기1" },
+    { name: "권민재", text: "후기2" },
+    // 계속 추가 가능
+  ]; -->
+
+  const INITIAL_SHOW = 3;   // 처음 보여줄 개수
+  const PAGE_SIZE = 10;     // 페이지당 최대 10개
+
+  let isExpanded = false;    // 더보기 눌렀는지 여부
+  let currentPage = 1;       // 현재 페이지
+
+  const reviewList = document.getElementById("reviewList");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
+  const pagination = document.getElementById("pagination");
+
+  // ★ 리뷰 카드 UI 생성 함수
+  function createReviewCard(review) {
+    return `
+      <div class="bg-zinc-800 p-4 rounded-lg shadow">
+        <p class="font-semibold">${review.name}</p>
+        <p class="text-gray-100">${review.text}</p>
+      </div>
+    `;
+  }
+
+  // ★ 처음 3개만 렌더링
+  function renderInitialReviews() {
+    reviewList.innerHTML = reviews
+      .slice(0, INITIAL_SHOW)
+      .map(createReviewCard)
+      .join("");
+  }
+
+  // ★ 10개씩 페이지 렌더링 (더보기 이후)
+  function renderPage(page) {
+    reviewList.innerHTML = "";
+
+    const start = (page - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    const items = reviews.slice(start, end);
+
+    items.forEach(item => {
+      reviewList.innerHTML += createReviewCard(item);
+    });
+
+    generatePagination();
+  }
+
+  // ★ 페이지 번호 생성
+  function generatePagination() {
+    const pageCount = Math.ceil(reviews.length / PAGE_SIZE);
+
+    if (pageCount <= 1) {
+      pagination.innerHTML = "";
+      return;
+    }
+
+    pagination.innerHTML = [...Array(pageCount).keys()]
+      .map(i => {
+        const page = i + 1;
+        return `
+          <button 
+            onclick="goToPage(${page})"
+            class="px-3 py-1 rounded ${
+              page === currentPage ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-700'
+            }">
+            ${page}
+          </button>
+        `;
+      })
+      .join("");
+  }
+
+  // 페이지 이동 함수
+  function goToPage(page) {
+    currentPage = page;
+    renderPage(page);
+  }
+
+  // ★ "더보기" 버튼 클릭
+  loadMoreBtn.addEventListener("click", () => {
+    isExpanded = true;
+
+    // 10개 페이지 모드로 전환
+    renderPage(1);
+
+    // 더보기 버튼 숨김
+    loadMoreBtn.style.display = "none";
+  });
+
+  // 초기 상태 렌더링
+  renderInitialReviews();
+</script>

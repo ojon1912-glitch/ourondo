@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>내 QnA 목록</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-3xl mx-auto px-1 py-10">
+  <h1 class="text-3xl font-bold mb-6 text-gray-100">내 QnA 목록</h1>
+
+  <div id="myQnaList" class="space-y-4"></div>
+</main>
+
+<script>
+const token = localStorage.getItem("token");
+
+if (!token) {
+  alert("로그인이 필요합니다.");
+  location.href = "/auth/login.html";
+}
+
+// 내 QnA 가져오기
+fetch("/api/qna/my", {
+  headers: { Authorization: `Bearer ${token}` }
+})
+  .then(res => res.json())
+  .then(list => {
+    const container = document.getElementById("myQnaList");
+
+    if (list.length === 0) {
+      container.innerHTML = "<p class='text-gray-500'>작성한 QnA가 없습니다.</p>";
+      return;
+    }
+
+    list.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "p-4 bg-zinc-900 rounded shadow cursor-pointer hover:bg-zinc-800";
+      div.onclick = () => location.href = `/qna/view.html?qna_seq=${item.qna_seq}`;
+
+      div.innerHTML = `
+        <h2 class="text-xl font-semibold">${item.title}</h2>
+        <p class="text-gray-100 text-sm">${
+          new Date(item.cre_dtime).toLocaleString()
+        }</p>
+      `;
+
+      container.appendChild(div);
+    });
+  });
+</script>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => (document.getElementById("footer").innerHTML = html));
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+
+<!-- body 설정 -->
+  <script>
+    window.BODY_LAYOUT = {
+      theme: "dark",
+      bokeh: true
+    };
+  </script>
+  <script src="/js/bodylayout.js"></script>
+</body>
+</html>

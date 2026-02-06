@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원탈퇴</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-md mx-auto px-1 py-10">
+  <h1 class="text-2xl font-bold mb-6 text-red-600">회원탈퇴</h1>
+
+  <!-- ★ FIX: 비밀번호 입력 안내 제거 -->
+  <p class="mb-4 text-gray-700">
+    회원 탈퇴 시 모든 정보는 즉시 삭제되며 복구할 수 없습니다.
+  </p>
+
+  <div class="bg-white p-6 rounded shadow space-y-4">
+
+    <!-- ★ FIX: 비밀번호 입력 필드 제거 -->
+
+    <button
+      id="deleteBtn"
+      class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+    >
+      탈퇴하기
+    </button>
+  </div>
+</main>
+
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(r => r.text())
+    .then(h => footer.innerHTML = h);
+</script>
+
+<!-- ================= 모달 ================= -->
+<script src="/js/privacy-modal.js"></script>
+
+<script>
+document.getElementById("deleteBtn").addEventListener("click", async () => {
+
+  // ★ FIX: 비밀번호 검증 제거
+  if (!confirm("정말 탈퇴하시겠습니까?\n탈퇴 후에는 복구가 불가능합니다.")) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    location.href = "/auth/login.html";
+    return;
+  }
+
+  let res;
+  try {
+    res = await fetch("/api/auth/delete", {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+  } catch (e) {
+    alert("서버 요청에 실패했습니다.");
+    return;
+  }
+
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (e) {}
+
+  if (!res.ok) {
+    alert(data.error || "탈퇴 실패");
+    return;
+  }
+
+  alert("회원탈퇴가 완료되었습니다.");
+
+  // 모든 로그인 정보 제거
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  location.href = "/";
+});
+</script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+</body>
+</html>

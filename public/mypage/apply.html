@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!-- ★ VERSION v20251230_6 (신규 R2 업로드 파일 표시 고정: apply/... key → R2 public URL 변환) -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>지원자 관리 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    // ★ ADD(v20251230_6): 로컬/배포 자동 구분 + R2 public 도메인 세팅
+    (function () {
+      const host = location.hostname || "";
+      const isProd = (host === "ourondo.fly.dev") || host.endsWith(".fly.dev");
+      window.STORAGE_TYPE = isProd ? "r2" : "local";
+      window.R2_PUBLIC_DOMAIN = "pub-2a82da3e11e64177a84a58a7c86a9cf0.r2.dev";
+    })();
+  </script>
+</head>
+
+<body class="bg-zinc-900 text-white">
+
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-6xl mx-auto px-1 py-10">
+  <h1 class="text-3xl font-bold mb-8 text-gray-100">🛠️ 지원자 관리</h1>
+  <div id="applyList" class="space-y-6"></div>
+</main>
+
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => (document.getElementById("footer").innerHTML = html));
+</script>
+
+<script>
+function formatDateTime(dateStr) {
+  return new Date(dateStr).toISOString().split("T")[0];
+}
+
+function productTypeText(type) {
+  switch (Number(type)) {
+    case 1: return "Classic";
+    case 2: return "Spark";
+    default: return "알 수 없음";
+  }
+}
+
+function genderTypeText(type) {
+  switch (type) {
+    case 'M': return "남성";
+    case 'F': return "여성";
+    default: return "알 수 없음";
+  }
+}
+
+function formatKST(datetime) {
+  return new Date(datetime).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+
+// ★ FIX: 이미지 경로 정규화
+function resolveImageUrl(path) {
+  if (!path) return "";
+
+  // 이미 절대 URL (R2)
+  if (path.startsWith("http")) {
+    return path;
+  }
+
+  // 로컬 업로드 (/uploads/...) - 과거 데이터는 안 보여도 된다고 했지만, 로컬 개발은 유지
+  if (path.startsWith("/uploads")) {
+    return path;
+  }
+
+  // ★ CHANGED(v20251230_6): R2 key 형태 (apply/xxx.png) 는 무조건 R2 public URL로 변환
+  if (path.startsWith("apply/") && window.STORAGE_TYPE === "r2" && window.R2_PUBLIC_DOMAIN) {
+    return `https://${window.R2_PUBLIC_DOMAIN}/${path}`;
+  }
+
+  // fallback (로컬)
+  return `/uploads/${path}`;
+}
+
+
+(async function () {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("로그인이 필요합니다.");
+    location.href = "/auth/login.html";
+    return;
+  }
+
+  const res = await fetch("/api/admin/apply", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+  const container = document.getElementById("applyList");
+
+  if (data.length === 0) {
+    container.innerHTML = `<p class="text-gray-400">지원자가 없습니다.</p>`;
+    return;
+  }
+
+  data.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "bg-zinc-800 p-6 rounded-lg shadow";
+
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h2 class="text-xl font-bold">${item.name}</h2>
+          <p class="text-sm text-gray-400">신청한 시간:  ${formatKST(item.cre_dtime)}</p>
+          <p class="text-sm text-gray-400">신청일: ${formatDateTime(item.apply_date)}</p>
+          <p class="text-sm text-gray-400">상품: ${productTypeText(item.product_type)}</p>
+          <p class="text-sm text-gray-400">번호: ${item.contact}</p>
+          <p class="text-sm text-gray-400">
+            ${genderTypeText(item.gender)} · ${item.height} · ${item.birth_year}년생 · ${item.job} · ${item.mbti}
+          </p>
+          <p class="text-sm text-gray-400">Message : ${item.message}</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4 mb-4 flex-wrap">
+        ${(item.photos || []).map(p => {
+          const url = resolveImageUrl(p);
+          return `
+            <a href="${url}" target="_blank">
+              <img src="${url}" class="w-32 h-40 object-cover rounded border hover:opacity-80" />
+            </a>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="flex gap-4">
+        <button onclick="approve(${item.apply_seq})"
+          class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">수락</button>
+        <button onclick="reject(${item.apply_seq})"
+          class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">거절</button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+})();
+
+function approve(id) {
+  if (!confirm("이 지원자를 수락하시겠습니까?")) return;
+  fetch(`/api/admin/apply/${id}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  }).then(() => location.reload());
+}
+
+function reject(id) {
+  if (!confirm("이 지원자를 거절하시겠습니까?")) return;
+  fetch(`/api/admin/apply/${id}/reject`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  }).then(() => location.reload());
+}
+</script>
+
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>
