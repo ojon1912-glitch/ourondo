@@ -15,8 +15,6 @@ const path = require("path");
 // DB 연결
 require("./db");
 
-// ★ VERSION v20251230_6 (STORAGE_TYPE/R2_PUBLIC_URL 미정의 ReferenceError 방지)
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -31,12 +29,7 @@ app.use(cors());
 // 정적 파일 경로
 // ===============================
 const PUBLIC_DIR = process.env.PUBLIC_DIR || "public";
-const PUBLIC_PATH = path.join(__dirname, "..", PUBLIC_DIR); // ★ ADD(v20251230_1)
-app.use(express.static(PUBLIC_PATH)); // ★ CHANGED(v20251230_1)
-
-// ★ ADD(v20251230_6): /uploads fallback에서 참조하는 env 변수 정의(현재 코드 안정화 목적)
-const STORAGE_TYPE = (process.env.STORAGE_TYPE || "local").toLowerCase();
-const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+app.use(express.static(path.join(__dirname, "..", PUBLIC_DIR)));
 
 // ===============================
 // API 라우터
@@ -81,18 +74,11 @@ if (process.env.API_QNA) {
 // ===============================
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// ★ ADD(v20251230_3): 배포(STORAGE_TYPE=r2)에서 DB에 /uploads 경로가 저장된 경우를 위한 fallback
-app.use("/uploads", (req, res, next) => {
-  if (STORAGE_TYPE !== "r2") return next();
-  if (!R2_PUBLIC_URL) return next();
-
-  const key = req.path.replace(/^\/+/, "");
-  return res.redirect(`${R2_PUBLIC_URL}/${key}`);
-});
-
-
 // APPLY API
 app.use("/api/apply", require("./routes/apply"));
+
+// ★ VERSION v20260206_1 (이니시스 결제 API 추가)
+app.use("/api/pay", require("./routes/pay")); // ★ ADD v20260206_1
 
 // admin 전용 페이지
 app.use("/api/admin", require("./routes/admin"));
@@ -107,37 +93,10 @@ app.get("/health", (_, res) => {
   res.status(200).send("OK");
 });
 
-
-
 // ===============================
 // kakao login 
 // ===============================
 app.use("/api/user", require("./routes/user"));
-
-// ===============================
-// robots.txt / sitemap.xml (애드부스트 수집 안정화)
-// ===============================
-// ★ ADD(v20251230_1)
-app.get("/robots.txt", (req, res) => {
-  const filePath = path.join(PUBLIC_PATH, "robots.txt");
-  res.type("text/plain");
-  return res.sendFile(filePath);
-});
-
-// ★ ADD(v20251230_1)
-app.get("/sitemap.xml", (req, res) => {
-  const filePath = path.join(PUBLIC_PATH, "sitemap.xml");
-  res.type("application/xml");
-  return res.sendFile(filePath);
-});
-
-// ===============================
-// 404 Not Found
-// ===============================
-// ★ ADD(v20251230_1)
-app.use((req, res) => {
-  return res.status(404).send("Not Found");
-});
 
 // ===============================
 // 서버 시작

@@ -122,7 +122,16 @@ module.exports = {
     );
   },
 
-  // 6️⃣ 🔥 사용자: 내 지원 내역 (마이페이지)
+  // 6️⃣ 신청서 단건 조회 (결제용)
+  async getApplyBySeq(applySeq) {
+    const result = await db.query(
+      `SELECT * FROM tm_apply WHERE apply_seq = $1`,
+      [applySeq]
+    );
+    return result.rows[0] || null;
+  },
+
+  // 7️⃣ 🔥 사용자: 내 지원 내역 (마이페이지)
   async getMyApplies(userSeq) {
     const result = await db.query(
       `

@@ -354,17 +354,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btn.addEventListener("click", async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return alert("로그인이 필요합니다.");
+      const token = localStorage.getItem("token"); // ★ CHANGED(v20260206_3): 토큰은 있을 수도/없을 수도
 
       const form = document.getElementById("applyForm");
       const formData = new FormData(form);
 
+      // ★ ADD(v20260206_3): 토큰이 있으면만 Authorization 헤더 추가
+      const headers = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       const res = await fetch("/api/apply", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers, // ★ CHANGED(v20260206_3)
         body: formData,
       });
 
@@ -374,7 +375,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       alert("✅ 신청이 완료되었습니다!");
-      location.href = "/";
+      // ★ CHANGED(v20260206_3): 결제 페이지로 이동
+      location.href = `/pay/checkout.html?apply_seq=${data.apply_seq}`;
     } catch (e) {
       console.error(e);
       alert("서버 오류");
@@ -382,6 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
 
 <!-- body 설정 -->
 <script>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!-- ★ VERSION v20260206_3 (결제 결과 페이지: 우리의 온도 톤 적용 + 문구/UX 정리) -->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>결제 결과 | 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-zinc-900 text-white">
+  <div id="header"></div>
+
+  <main class="max-w-xl mx-auto px-4 py-10">
+    <div id="resultBox" class="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
+      <div class="text-white/50">결과를 확인하고 있어요…</div>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-3">
+      <a href="/" class="w-full py-3 rounded-xl bg-pink-500 text-white font-semibold text-center">홈으로</a>
+      <a href="/apply/classic_apply.html" class="text-center text-white/60 hover:text-white underline">다른 일정으로 다시 신청하기</a>
+    </div>
+
+    <p class="mt-6 text-xs text-white/40 text-center leading-relaxed">
+      결제 완료 후에도 신청 검토 과정이 진행됩니다. <br/>
+      진행 안내는 입력하신 연락처로 순차 안내드려요.
+    </p>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="/js/layout.js"></script>
+
+  <script>
+  (function () {
+    const qs = new URLSearchParams(location.search);
+    const status = qs.get("status");
+    const orderNumber = qs.get("oid") || "";
+    const msg = qs.get("msg") || "";
+
+    const box = document.getElementById("resultBox");
+
+    if (status === "ok") {
+      box.innerHTML = `
+        <div class="text-4xl mb-4">🌡️</div>
+        <h2 class="text-2xl font-bold mb-2">결제가 완료되었습니다</h2>
+        <p class="text-white/70 mt-3">우리의 온도가 한 걸음 더 가까워졌어요.</p>
+
+        <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <p class="text-sm text-white/60">주문번호</p>
+          <p class="text-sm text-white/50 mt-1 break-all">${orderNumber}</p>
+        </div>
+
+        <p class="text-sm text-white/60 mt-6 leading-relaxed">
+          신청서 확인 후, 일정/진행 안내를 드립니다.<br/>
+          문의는 하단의 카카오 1:1 채널로 남겨주세요.
+        </p>
+      `;
+      box.classList.add("border-white/20"); // ★ CHANGED(v20260206_3): 우리 톤(은은)으로
+    } else {
+      box.innerHTML = `
+        <div class="text-4xl mb-4">💭</div>
+        <h2 class="text-2xl font-bold mb-2">결제가 완료되지 않았어요</h2>
+        <p class="text-white/60 mt-3">${msg || "결제가 취소되었거나 오류가 발생했습니다."}</p>
+
+        <div class="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
+          <p class="text-sm text-white/60">안내</p>
+          <p class="text-sm text-white/50 mt-1 leading-relaxed">
+            다시 시도해도 동일하면 브라우저 새로고침 후 재결제를 진행해주세요.<br/>
+            계속 문제가 발생하면 하단 카카오 1:1 채널로 문의 부탁드립니다.
+          </p>
+        </div>
+      `;
+      box.classList.add("border-white/20"); // ★ CHANGED(v20260206_3): 강한 레드톤 대신 은은하게
+    }
+  })();
+
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      if (typeof initHeader === "function") initHeader();
+      if (typeof applyLoginState === "function") applyLoginState();
+    })
+    .catch(err => console.warn("header load failed", err));
+
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+    });
+  </script>
+</body>
+</html>
