@@ -52,6 +52,16 @@
     const div = document.createElement("div");
     div.className = "bg-zinc-800 p-4 rounded-lg";
 
+    let payBtnHtml = "";
+    if (item.pay_status === "PA") {
+      payBtnHtml = `<button onclick="requestRefund(${item.apply_seq})"
+        class="ml-2 px-3 py-1 rounded bg-orange-500 text-white text-sm hover:bg-orange-600">환불 신청</button>`;
+    } else if (item.pay_status === "RR") {
+      payBtnHtml = `<span class="ml-2 px-3 py-1 rounded bg-yellow-500 text-black text-sm">환불 처리중</span>`;
+    } else if (item.pay_status === "RF") {
+      payBtnHtml = `<span class="ml-2 px-3 py-1 rounded bg-gray-500 text-white text-sm">환불 완료</span>`;
+    }
+
     div.innerHTML = `
       <div class="flex justify-between items-center">
         <div>
@@ -60,9 +70,12 @@
             신청일: ${formatDate(item.apply_date)}
           </p>
         </div>
-        <span class="px-3 py-1 rounded ${statusColor(item.flag)}">
-          ${statusText(item.flag)}
-        </span>
+        <div class="flex items-center">
+          <span class="px-3 py-1 rounded ${statusColor(item.flag)}">
+            ${statusText(item.flag)}
+          </span>
+          ${payBtnHtml}
+        </div>
       </div>
     `;
 
@@ -93,6 +106,26 @@ function statusColor(flag) {
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+}
+
+async function requestRefund(applySeq) {
+  if (!confirm("환불을 신청하시겠습니까?")) return;
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`/api/mypage/apply/${applySeq}/refund`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("환불 신청이 완료되었습니다.");
+      location.reload();
+    } else {
+      alert(data.error || "환불 신청에 실패했습니다.");
+    }
+  } catch (e) {
+    alert("오류가 발생했습니다.");
+  }
 }
 </script>
 

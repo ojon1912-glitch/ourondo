@@ -1,4 +1,10 @@
-// ★ VERSION v20260206_1 (checkout.html: 결제 준비 호출 + INIStdPay.pay 실행)
+// ★ VERSION v20260208_1 (PC/모바일 자동 분기 결제)
+
+function isMobile() {
+  return /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|Opera Mini|IEMobile/i.test(
+    navigator.userAgent
+  );
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const qs = new URLSearchParams(location.search);
@@ -6,7 +12,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const payBtn = document.getElementById("payBtn");
   const payInfo = document.getElementById("payInfo");
-  const form = document.getElementById("SendPayForm_id");
+  const pcForm = document.getElementById("SendPayForm_id");
+  const mobileForm = document.getElementById("MobilePayForm");
 
   if (!apply_seq) {
     alert("apply_seq가 없습니다.");
@@ -19,7 +26,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const headers = {};
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const res = await fetch(`/api/pay/ready?apply_seq=${encodeURIComponent(apply_seq)}`, { headers });
+    const res = await fetch(
+      `/api/pay/ready?apply_seq=${encodeURIComponent(apply_seq)}`,
+      { headers }
+    );
     const data = await res.json();
 
     if (!res.ok) {
@@ -36,20 +46,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="text-xs text-white/50 mt-3">주문번호: ${data.oid}</div>
     `;
 
-    // 폼 주입
-    form.querySelector('input[name="mid"]').value = data.mid;
-    form.querySelector('input[name="oid"]').value = data.oid;
-    form.querySelector('input[name="goodname"]').value = data.goodname;
-    form.querySelector('input[name="price"]').value = data.price;
-    form.querySelector('input[name="buyername"]').value = data.buyername;
-    form.querySelector('input[name="buyertel"]').value = data.buyertel;
-    form.querySelector('input[name="buyeremail"]').value = data.buyeremail;
-    form.querySelector('input[name="timestamp"]').value = data.timestamp;
-    form.querySelector('input[name="signature"]').value = data.signature;
-    form.querySelector('input[name="verification"]').value = data.verification;
-    form.querySelector('input[name="mKey"]').value = data.mKey;
-    form.querySelector('input[name="returnUrl"]').value = data.returnUrl;
-    form.querySelector('input[name="closeUrl"]').value = data.closeUrl;
+    // PC 폼 주입
+    pcForm.querySelector('input[name="mid"]').value = data.mid;
+    pcForm.querySelector('input[name="oid"]').value = data.oid;
+    pcForm.querySelector('input[name="goodname"]').value = data.goodname;
+    pcForm.querySelector('input[name="price"]').value = data.price;
+    pcForm.querySelector('input[name="buyername"]').value = data.buyername;
+    pcForm.querySelector('input[name="buyertel"]').value = data.buyertel;
+    pcForm.querySelector('input[name="buyeremail"]').value = data.buyeremail;
+    pcForm.querySelector('input[name="timestamp"]').value = data.timestamp;
+    pcForm.querySelector('input[name="signature"]').value = data.signature;
+    pcForm.querySelector('input[name="verification"]').value = data.verification;
+    pcForm.querySelector('input[name="mKey"]').value = data.mKey;
+    pcForm.querySelector('input[name="returnUrl"]').value = data.returnUrl;
+    pcForm.querySelector('input[name="closeUrl"]').value = data.closeUrl;
+
+    // 모바일 폼 주입
+    mobileForm.querySelector('input[name="P_MID"]').value = data.mid;
+    mobileForm.querySelector('input[name="P_OID"]').value = data.oid;
+    mobileForm.querySelector('input[name="P_AMT"]').value = data.price;
+    mobileForm.querySelector('input[name="P_GOODS"]').value = data.goodname;
+    mobileForm.querySelector('input[name="P_UNAME"]').value = data.buyername;
+    mobileForm.querySelector('input[name="P_MOBILE"]').value = data.buyertel;
+    mobileForm.querySelector('input[name="P_EMAIL"]').value = data.buyeremail;
+    mobileForm.querySelector('input[name="P_NEXT_URL"]').value = data.mobileReturnUrl || data.returnUrl.replace("/return", "/mobile-return");
 
     return data;
   }
@@ -65,8 +85,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   payBtn.addEventListener("click", () => {
     try {
       if (!readyData) return alert("결제 준비가 되지 않았습니다.");
-      // INIStdPay.pay("폼ID")
-      INIStdPay.pay("SendPayForm_id");
+
+      if (isMobile()) {
+        mobileForm.submit();
+      } else {
+        INIStdPay.pay("SendPayForm_id");
+      }
     } catch (e) {
       console.error(e);
       alert("결제창 호출 실패");

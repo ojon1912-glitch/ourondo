@@ -11,6 +11,10 @@ function sha256Hex(str) {
   return crypto.createHash("sha256").update(str, "utf8").digest("hex");
 }
 
+function sha512Hex(str) {
+  return crypto.createHash("sha512").update(str, "utf8").digest("hex");
+}
+
 // NVP signature: key 기준 알파벳 정렬 + key=value & 연결 후 SHA256
 // (oid, price, timestamp) :contentReference[oaicite:1]{index=1}
 function makeNvpSignature(params) {
@@ -117,6 +121,7 @@ exports.ready = async (req, res) => {
     }
 
     const returnUrl = `${siteDomain}/api/pay/return`;
+    const mobileReturnUrl = `${siteDomain}/api/pay/mobile-return`;
     const closeUrl = `${siteDomain}/pay/close.html`;
 
     // DB: 결제 준비 레코드 생성
@@ -142,6 +147,7 @@ exports.ready = async (req, res) => {
       verification,
       mKey,
       returnUrl,
+      mobileReturnUrl,
       closeUrl,
       // 표시용
       goodname:
@@ -156,6 +162,50 @@ exports.ready = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "서버 오류" });
   }
+};
+
+exports.cancelPayment = async function cancelPayment(mid, tid, msg) {
+  const INIAPIKey = process.env.INICIS_INIAPI_KEY;
+  if (!INIAPIKey) throw new Error("INICIS_INIAPI_KEY 환경변수 미설정");
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const timestamp =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+  const clientIp = process.env.SERVER_IP || "127.0.0.1";
+  const type = "Refund";
+  const paymethod = "Card";
+
+  const hashData = sha512Hex(
+    INIAPIKey + type + paymethod + timestamp + clientIp + mid + tid
+  );
+
+  const formData = {
+    type,
+    paymethod,
+    timestamp,
+    clientIp,
+    mid,
+    tid,
+    msg: msg || "고객 환불 요청",
+    hashData,
+  };
+
+  const raw = await postForm("https://iniapi.inicis.com/api/v1/refund", formData);
+  let result;
+  try {
+    result = JSON.parse(raw);
+  } catch (e) {
+    throw new Error("이니시스 응답 파싱 실패: " + raw);
+  }
+
+  if (result.resultCode !== "00") {
+    throw new Error(`이니시스 환불 실패: [${result.resultCode}] ${result.resultMsg}`);
+  }
+
+  return result;
 };
 
 exports.inicisReturn = async (req, res) => {
@@ -283,6 +333,94 @@ exports.inicisReturn = async (req, res) => {
     );
   } catch (err) {
     console.error(err);
+    res.status(500).send("server error");
+  }
+};
+
+// ★ 모바일 결제 리턴 핸들러
+// 이니시스 모바일은 P_NEXT_URL로 GET 리다이렉트
+// P_STATUS === "00" 이면 P_REQ_URL로 승인 요청
+exports.mobileReturn = async (req, res) => {
+  try {
+    const params = req.query;
+    const P_STATUS = params.P_STATUS;
+    const P_RMESG1 = params.P_RMESG1 || "";
+    const P_TID = params.P_TID || "";
+    const P_REQ_URL = params.P_REQ_URL || "";
+    const P_OID = params.P_ORDERID || params.P_OID || "";
+
+    if (P_STATUS !== "00") {
+      await Pay.markPayFailed(P_OID || null, {
+        P_STATUS,
+        P_RMESG1,
+        raw: params,
+      });
+      return res.redirect(
+        `/pay/result.html?status=fail&msg=${encodeURIComponent(P_RMESG1 || "결제 실패")}`
+      );
+    }
+
+    // 모바일 승인 요청: P_REQ_URL로 POST (P_TID, P_MID만 전송)
+    const mid = process.env.INICIS_MID;
+    let approveRaw = "";
+    try {
+      approveRaw = await postForm(P_REQ_URL, {
+        P_TID: P_TID,
+        P_MID: mid,
+      });
+    } catch (e) {
+      console.error("mobile approve request failed:", e);
+      return res.redirect(
+        `/pay/result.html?status=fail&msg=${encodeURIComponent("모바일 결제 승인 통신 실패")}`
+      );
+    }
+
+    // 모바일 승인 응답 파싱 (key=value& 형식)
+    let approve = {};
+    try {
+      // 먼저 JSON 시도
+      approve = JSON.parse(approveRaw);
+    } catch (e) {
+      // URL-encoded 형식 파싱
+      const parsed = querystring.parse(approveRaw);
+      approve = parsed;
+    }
+
+    const resultCode = approve.P_STATUS || approve.resultCode || "";
+    const resultMsg = approve.P_RMESG1 || approve.resultMsg || "";
+    const tid = approve.P_TID || P_TID;
+    const orderNumber = approve.P_OID || P_OID;
+
+    if (resultCode !== "00" && resultCode !== "0000") {
+      await Pay.markPayFailed(orderNumber || null, {
+        resultCode,
+        resultMsg,
+        raw: approveRaw,
+      });
+      return res.redirect(
+        `/pay/result.html?status=fail&msg=${encodeURIComponent(resultMsg || "결제 승인 실패")}`
+      );
+    }
+
+    // DB 저장
+    try {
+      await Pay.markPayApproved(orderNumber, {
+        approve_raw: approveRaw,
+        approve_json: { ...approve, tid: tid },
+        merchantData: null,
+      });
+    } catch (dbErr) {
+      console.error("mobile DB save failed:", dbErr);
+      return res.redirect(
+        `/pay/result.html?status=fail&msg=${encodeURIComponent("DB 저장 오류")}`
+      );
+    }
+
+    return res.redirect(
+      `/pay/result.html?status=ok&oid=${encodeURIComponent(orderNumber)}`
+    );
+  } catch (err) {
+    console.error("mobileReturn error:", err);
     res.status(500).send("server error");
   }
 };

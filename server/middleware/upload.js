@@ -47,7 +47,7 @@ if (isR2) { // ★ CHANGED(v20251230_5)
 ============================ */
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
 module.exports = upload;

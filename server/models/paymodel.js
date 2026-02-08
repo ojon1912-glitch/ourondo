@@ -82,4 +82,26 @@ module.exports = {
       [oid, JSON.stringify(payload || {})]
     );
   },
+
+  async getPayByApplySeq(apply_seq) {
+    const result = await db.query(
+      `SELECT * FROM tm_pay WHERE apply_seq = $1 ORDER BY cre_dtime DESC LIMIT 1`,
+      [apply_seq]
+    );
+    return result.rows[0] || null;
+  },
+
+  async markRefundRequested(oid) {
+    await db.query(
+      `UPDATE tm_pay SET status = 'RR', upd_dtime = now() WHERE oid = $1`,
+      [oid]
+    );
+  },
+
+  async markRefunded(oid, cancelJson) {
+    await db.query(
+      `UPDATE tm_pay SET status = 'RF', cancel_json = $2, upd_dtime = now() WHERE oid = $1`,
+      [oid, JSON.stringify(cancelJson || {})]
+    );
+  },
 };

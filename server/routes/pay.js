@@ -9,7 +9,10 @@ const payController = require("../controllers/paycontroller");
 // 결제 준비(주문 생성 + 결제창 파라미터 생성)
 router.get("/ready", optionalAuth, payController.ready);
 
-// 이니시스 returnUrl (POST) - 인증결과 수신 + 승인요청 + DB 저장 + 결과 페이지 응답
+// 이니시스 returnUrl (POST) - PC 인증결과 수신 + 승인요청 + DB 저장 + 결과 페이지 응답
 router.post("/return", payController.inicisReturn);
+
+// 이니시스 모바일 returnUrl (GET) - 모바일 결제 결과 수신 + 승인요청
+router.get("/mobile-return", payController.mobileReturn);
 
 module.exports = router;

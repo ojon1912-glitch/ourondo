@@ -226,6 +226,7 @@
         <label class="block mb-2 font-semibold">*현재 본인과 가장 유사한 최근 사진을 최소 2장 이상 업로드해주세요. <br/> 
         *실물이 사진과 많이 다른 경우 추후 재참여 불가합니다. <br/>
       *클로즈업 된 셀카나 과한 보정이 들어간 사진은 반려 및 재요청 될 수 있습니다. <br/>
+      *2개의 사진을 함께 선택해서 업로드해주세요. <br/>
     *소개팅 목적으로만 사용되며, 참여 승인이 안 된 분의 자료는 폐기됩니다.</label>
         <input
           type="file"
@@ -272,6 +273,8 @@
       <p class="text-sm text-gray-300 pt-1">- 승인 거절 처리된 경우, 거절 사유를 따로 안내해드리지 않습니다.</p>
       <p class="text-sm text-gray-300 pt-1">- 허위 정보 기재 등 사실과 다른 내용으로 타인을 기만하는 행위가 확인될 경우,
 블랙리스트에 등록되며 이후 서비스 재이용이 제한될 수 있습니다.</p>
+      <p class="text-sm text-gray-300 pt-1">- 행사 4일 전까지 취소 시 전액 환불</p>
+      <p class="text-sm text-gray-300 pt-1">- 행사 3일 전~당일 취소 및 무단 불참 시 환불 불가</p>
         </div>
       </div>
 
@@ -287,6 +290,14 @@
         신청하기
       </button>
 
+      <!-- 로딩 오버레이 -->
+      <div id="loadingOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-12 h-12 border-4 border-white border-t-pink-500 rounded-full animate-spin"></div>
+          <p class="text-white text-lg font-semibold">신청 처리 중...</p>
+        </div>
+      </div>
+
       <p class="text-sm text-gray-400 text-center">
         신청 후 아래 카카오톡으로 연락을 남겨주시면 담당자가 더 빠르게 확인하여 안내드립니다.
       </p>
@@ -297,7 +308,7 @@
     <div class="text-center mt-10">
       <p class="text-gray-400 text-sm">문의가 필요하신가요?</p>
       <a
-        href="http://pf.kakao.com/_sDFgn/chat"
+        href="http://pf.kakao.com/_XxnxahX/chat"
         target="_blank"
         class="inline-block mt-2 bg-yellow-400 text-black px-5 py-2 rounded-full font-semibold hover:bg-yellow-500 transition"
       >
@@ -357,7 +368,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   btn.addEventListener("click", async () => {
+    const overlay = document.getElementById("loadingOverlay");
     try {
+      btn.disabled = true;
+      overlay.classList.remove("hidden");
+
       const token = localStorage.getItem("token"); // ★ CHANGED(v20260206_3): 토큰은 있을 수도/없을 수도
 
       const form = document.getElementById("applyForm");
@@ -375,6 +390,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
       if (!res.ok) {
+        overlay.classList.add("hidden");
+        btn.disabled = false;
         return alert(data.error || "신청 실패");
       }
 
@@ -383,6 +400,8 @@ document.addEventListener("DOMContentLoaded", () => {
       location.href = `/pay/checkout.html?apply_seq=${data.apply_seq}`;
     } catch (e) {
       console.error(e);
+      overlay.classList.add("hidden");
+      btn.disabled = false;
       alert("서버 오류");
     }
   });

@@ -32,9 +32,34 @@
     });
 </script>
 
-<main class="max-w-6xl mx-auto px-1 py-10">
-  <h1 class="text-3xl font-bold mb-8 text-gray-100">🛠️ 지원자 관리</h1>
-  <div id="applyList" class="space-y-6"></div>
+<main class="max-w-6xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-bold mb-6 text-gray-100">지원자 관리</h1>
+
+  <!-- 검색 & 필터 -->
+  <div class="bg-zinc-800 p-4 rounded-lg mb-6 flex flex-wrap gap-3 items-center">
+    <input id="searchInput" type="text" placeholder="이름, 번호, MBTI 검색..."
+      class="bg-zinc-700 text-white px-4 py-2 rounded flex-1 min-w-[200px] outline-none focus:ring-2 focus:ring-blue-500" />
+    <select id="filterProduct" class="bg-zinc-700 text-white px-3 py-2 rounded outline-none">
+      <option value="">전체 상품</option>
+      <option value="1">Classic</option>
+      <option value="2">Spark</option>
+    </select>
+    <select id="filterFlag" class="bg-zinc-700 text-white px-3 py-2 rounded outline-none">
+      <option value="">전체 상태</option>
+      <option value="AA">대기중</option>
+      <option value="PS">수락됨</option>
+      <option value="RJ">거절됨</option>
+    </select>
+    <select id="filterPay" class="bg-zinc-700 text-white px-3 py-2 rounded outline-none">
+      <option value="">전체 결제</option>
+      <option value="PA">결제완료</option>
+      <option value="RR">환불요청</option>
+      <option value="RF">환불완료</option>
+    </select>
+    <span id="resultCount" class="text-sm text-gray-400 ml-auto"></span>
+  </div>
+
+  <div id="applyList" class="space-y-4"></div>
 </main>
 
 <div id="footer"></div>
@@ -102,6 +127,8 @@ function resolveImageUrl(path) {
 }
 
 
+let allData = [];
+
 (async function () {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -114,55 +141,126 @@ function resolveImageUrl(path) {
     headers: { Authorization: `Bearer ${token}` }
   });
 
-  const data = await res.json();
+  allData = await res.json();
+  renderList();
+
+  // 검색 & 필터 이벤트
+  document.getElementById("searchInput").addEventListener("input", renderList);
+  document.getElementById("filterProduct").addEventListener("change", renderList);
+  document.getElementById("filterFlag").addEventListener("change", renderList);
+  document.getElementById("filterPay").addEventListener("change", renderList);
+})();
+
+function flagText(flag) {
+  if (flag === "AA") return "대기중";
+  if (flag === "PS") return "수락됨";
+  if (flag === "RJ") return "거절됨";
+  return flag || "-";
+}
+
+function flagBadge(flag) {
+  const colors = {
+    AA: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
+    PS: "bg-green-500/20 text-green-400 border-green-500/40",
+    RJ: "bg-red-500/20 text-red-400 border-red-500/40",
+  };
+  const cls = colors[flag] || "bg-gray-500/20 text-gray-400 border-gray-500/40";
+  return `<span class="px-2 py-0.5 rounded text-xs border ${cls}">${flagText(flag)}</span>`;
+}
+
+function payBadge(status) {
+  if (!status || status === "RD") return "";
+  const map = {
+    PA: { text: "결제완료", cls: "bg-blue-500/20 text-blue-400 border-blue-500/40" },
+    FA: { text: "결제실패", cls: "bg-red-500/20 text-red-400 border-red-500/40" },
+    RR: { text: "환불요청", cls: "bg-orange-500/20 text-orange-400 border-orange-500/40" },
+    RF: { text: "환불완료", cls: "bg-gray-500/20 text-gray-400 border-gray-500/40" },
+  };
+  const m = map[status] || { text: status, cls: "bg-gray-500/20 text-gray-400 border-gray-500/40" };
+  return `<span class="px-2 py-0.5 rounded text-xs border ${m.cls}">${m.text}</span>`;
+}
+
+function refundBtn(item) {
+  if (item.pay_status === "PA")
+    return `<button onclick="adminRefund(${item.apply_seq})" class="text-xs bg-blue-600 px-3 py-1 rounded hover:bg-blue-700">환불</button>`;
+  if (item.pay_status === "RR")
+    return `<button onclick="adminRefund(${item.apply_seq})" class="text-xs bg-red-600 px-3 py-1 rounded hover:bg-red-700 border border-red-400 animate-pulse">환불 처리</button>`;
+  if (item.pay_status === "RF")
+    return `<span class="text-xs bg-gray-600 px-3 py-1 rounded text-gray-400">환불 완료</span>`;
+  return "";
+}
+
+function renderList() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const fProduct = document.getElementById("filterProduct").value;
+  const fFlag = document.getElementById("filterFlag").value;
+  const fPay = document.getElementById("filterPay").value;
   const container = document.getElementById("applyList");
 
-  if (data.length === 0) {
-    container.innerHTML = `<p class="text-gray-400">지원자가 없습니다.</p>`;
+  const filtered = allData.filter(item => {
+    if (fProduct && String(item.product_type) !== fProduct) return false;
+    if (fFlag && item.flag !== fFlag) return false;
+    if (fPay && item.pay_status !== fPay) return false;
+    if (query) {
+      const haystack = [item.name, item.contact, item.mbti, item.job, item.message].join(" ").toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("resultCount").textContent = `${filtered.length}건 / 전체 ${allData.length}건`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<p class="text-gray-500 text-center py-8">조건에 맞는 지원자가 없습니다.</p>`;
     return;
   }
 
-  data.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "bg-zinc-800 p-6 rounded-lg shadow";
+  container.innerHTML = filtered.map(item => `
+    <div class="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition">
+      <!-- 상단: 이름 + 뱃지 + 시간 -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-700 bg-zinc-800/80">
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-bold">${item.name}</h2>
+          ${flagBadge(item.flag)}
+          ${payBadge(item.pay_status)}
+        </div>
+        <span class="text-xs text-gray-500">${formatKST(item.cre_dtime)}</span>
+      </div>
 
-    card.innerHTML = `
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h2 class="text-xl font-bold">${item.name}</h2>
-          <p class="text-sm text-gray-400">신청한 시간:  ${formatKST(item.cre_dtime)}</p>
-          <p class="text-sm text-gray-400">신청일: ${formatDateTime(item.apply_date)}</p>
-          <p class="text-sm text-gray-400">상품: ${productTypeText(item.product_type)}</p>
-          <p class="text-sm text-gray-400">번호: ${item.contact}</p>
-          <p class="text-sm text-gray-400">
-            ${genderTypeText(item.gender)} · ${item.height} · ${item.birth_year}년생 · ${item.job} · ${item.mbti}
-          </p>
-          <p class="text-sm text-gray-400">Message : ${item.message}</p>
+      <div class="px-5 py-4">
+        <!-- 정보 그리드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-sm mb-4">
+          <div><span class="text-gray-500">상품</span> <span class="ml-2">${productTypeText(item.product_type)}</span></div>
+          <div><span class="text-gray-500">신청일</span> <span class="ml-2">${formatDateTime(item.apply_date)}</span></div>
+          <div><span class="text-gray-500">성별</span> <span class="ml-2">${genderTypeText(item.gender)}</span></div>
+          <div><span class="text-gray-500">출생</span> <span class="ml-2">${item.birth_year}년</span></div>
+          <div><span class="text-gray-500">키</span> <span class="ml-2">${item.height}</span></div>
+          <div><span class="text-gray-500">직업</span> <span class="ml-2">${item.job}</span></div>
+          <div><span class="text-gray-500">MBTI</span> <span class="ml-2">${item.mbti}</span></div>
+          <div><span class="text-gray-500">연락처</span> <span class="ml-2">${item.contact}</span></div>
+        </div>
+
+        ${item.message ? `<p class="text-sm text-gray-400 bg-zinc-900/50 rounded px-3 py-2 mb-4">${item.message}</p>` : ""}
+
+        <!-- 사진 -->
+        ${(item.photos || []).length > 0 ? `
+        <div class="flex gap-3 mb-4 flex-wrap">
+          ${item.photos.map(p => {
+            const url = resolveImageUrl(p);
+            return `<a href="${url}" target="_blank"><img src="${url}" class="w-24 h-32 object-cover rounded border border-zinc-600 hover:opacity-80 transition" /></a>`;
+          }).join("")}
+        </div>` : ""}
+
+        <!-- 버튼 -->
+        <div class="flex gap-2 items-center flex-wrap">
+          <button onclick="approve(${item.apply_seq})" class="text-xs bg-green-600 px-3 py-1.5 rounded hover:bg-green-700">수락</button>
+          <button onclick="reject(${item.apply_seq})" class="text-xs bg-red-600 px-3 py-1.5 rounded hover:bg-red-700">거절</button>
+          ${refundBtn(item)}
         </div>
       </div>
-
-      <div class="flex gap-4 mb-4 flex-wrap">
-        ${(item.photos || []).map(p => {
-          const url = resolveImageUrl(p);
-          return `
-            <a href="${url}" target="_blank">
-              <img src="${url}" class="w-32 h-40 object-cover rounded border hover:opacity-80" />
-            </a>
-          `;
-        }).join("")}
-      </div>
-
-      <div class="flex gap-4">
-        <button onclick="approve(${item.apply_seq})"
-          class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">수락</button>
-        <button onclick="reject(${item.apply_seq})"
-          class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">거절</button>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-})();
+    </div>
+  `).join("");
+}
 
 function approve(id) {
   if (!confirm("이 지원자를 수락하시겠습니까?")) return;
@@ -178,6 +276,33 @@ function reject(id) {
     method: "POST",
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
   }).then(() => location.reload());
+}
+
+async function adminRefund(id) {
+  if (!confirm("이 결제 건을 환불 처리하시겠습니까?\n이니시스 취소 API가 호출됩니다.")) return;
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = "처리중...";
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/admin/apply/${id}/refund`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("환불 처리가 완료되었습니다.");
+      location.reload();
+    } else {
+      alert(data.error || "환불 처리에 실패했습니다.");
+      btn.textContent = origText;
+      btn.disabled = false;
+    }
+  } catch (e) {
+    alert("오류가 발생했습니다.");
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 </script>
 

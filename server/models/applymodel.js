@@ -60,7 +60,7 @@ module.exports = {
   // 3️⃣ 관리자: 전체 신청자
   async getAllApplies() {
     const result = await db.query(`
-      SELECT 
+      SELECT
         a.apply_seq,
         a.user_seq,
         a.product_type,
@@ -76,6 +76,8 @@ module.exports = {
         a.message,
         a.cre_dtime,
         a.flag,
+        p.status AS pay_status,
+        p.oid,
         COALESCE(
           array_agg(f.file_path) FILTER (WHERE f.file_path IS NOT NULL),
           '{}'
@@ -84,7 +86,9 @@ module.exports = {
       LEFT JOIN tm_apply_files f
         ON a.apply_seq = f.apply_seq
        AND f.file_type = 'PHOTO'
-      GROUP BY 
+      LEFT JOIN tm_pay p
+        ON a.apply_seq = p.apply_seq
+      GROUP BY
         a.apply_seq,
         a.user_seq,
         a.product_type,
@@ -99,7 +103,9 @@ module.exports = {
         a.source,
         a.message,
         a.flag,
-        a.cre_dtime
+        a.cre_dtime,
+        p.status,
+        p.oid
       ORDER BY a.cre_dtime DESC
     `);
 
@@ -136,13 +142,16 @@ module.exports = {
     const result = await db.query(
       `
       SELECT
-        apply_seq,
-        product_type,
-        apply_date,
-        flag
-      FROM tm_apply
-      WHERE user_seq = $1
-      ORDER BY apply_date DESC, cre_dtime DESC
+        a.apply_seq,
+        a.product_type,
+        a.apply_date,
+        a.flag,
+        p.status AS pay_status,
+        p.oid
+      FROM tm_apply a
+      LEFT JOIN tm_pay p ON a.apply_seq = p.apply_seq
+      WHERE a.user_seq = $1
+      ORDER BY a.apply_date DESC, a.cre_dtime DESC
       `,
       [userSeq]
     );
