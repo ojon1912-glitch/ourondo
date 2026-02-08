@@ -214,7 +214,7 @@
           <option value="">선택</option>
           <option value="NAVER">네이버</option>
           <option value="INSTAGRAM">인스타그램</option>
-          <option value="Recom">지인추천</option>
+          <option value="Recom">지인추천(지인 말씀해주시면 감사합니다💘)</option>
           <option value="ETC">기타</option>
         </select>
       </div>
@@ -223,19 +223,25 @@
       <!-- 사진 업로드 -->
       <div>
         <label class="text-2xl block mb-2 font-semibold">💓본인 사진 (2장 이상)</label>
-        <label class="block mb-2 font-semibold">*현재 본인과 가장 유사한 최근 사진을 최소 2장 이상 업로드해주세요. <br/> 
-        *실물이 사진과 많이 다른 경우 추후 재참여 불가합니다. <br/>
-      *클로즈업 된 셀카나 과한 보정이 들어간 사진은 반려 및 재요청 될 수 있습니다. <br/>
-      *2개의 사진을 함께 선택해서 업로드해주세요. <br/>
-    *소개팅 목적으로만 사용되며, 참여 승인이 안 된 분의 자료는 폐기됩니다.</label>
+        <label class="block mb-2 font-semibold">
+          *한 장씩 또는 여러 장을 선택하여 업로드할 수 있습니다. <br/>
+          *현재의 본인과 가장 비슷한 최근 사진을 최소 2장 업로드해주세요. <br/>
+        *실물이 사진과 많이 다른 경우, 추후 재참여 불가합니다. <br/>
+        *소개팅 목적으로만 사용되며, 참여 승낙이 안된 분의 자료는 폐기됩니다. <br/>
+        *상반신 혹은 전신이 드러난 사진 업로드 부탁드려요.<br/><br/>
+        [ 반려 및 재요청 될 수 있는 사진 ]<br/>
+        1) 클로즈업 된 셀카 중복 업로드<br/>
+        2) 동일한 구도의 사진 중복 업로드<br/>
+        3) 과한 보정이 들어간 사진</label>
         <input
           type="file"
-          name="photos"
+          id="photoInput"
           multiple
           accept="image/*"
-          required
           class="w-full p-3 rounded bg-gray-800 border border-gray-700"
         />
+        <div id="photoPreview" class="flex flex-wrap gap-3 mt-3"></div>
+        <p id="photoCount" class="text-sm text-gray-400 mt-1"></p>
       </div>
 
 
@@ -355,6 +361,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("applyBtn");
   if (!btn) return alert("❌ 신청 버튼을 찾지 못했습니다.");
 
+  // ★ 사진 누적 업로드
+  const photoInput = document.getElementById("photoInput");
+  const photoPreview = document.getElementById("photoPreview");
+  const photoCount = document.getElementById("photoCount");
+  const collectedPhotos = [];
+
+  function renderPreview() {
+    photoPreview.innerHTML = "";
+    collectedPhotos.forEach((file, idx) => {
+      const wrap = document.createElement("div");
+      wrap.className = "relative";
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.className = "w-20 h-24 object-cover rounded border border-gray-600";
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "✕";
+      removeBtn.className = "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center";
+      removeBtn.onclick = () => { collectedPhotos.splice(idx, 1); renderPreview(); };
+      wrap.appendChild(img);
+      wrap.appendChild(removeBtn);
+      photoPreview.appendChild(wrap);
+    });
+    photoCount.textContent = collectedPhotos.length > 0 ? `${collectedPhotos.length}장 선택됨` : "";
+  }
+
+  photoInput.addEventListener("change", () => {
+    const files = Array.from(photoInput.files);
+    files.forEach(f => collectedPhotos.push(f));
+    photoInput.value = "";
+    renderPreview();
+  });
+
   // ★ CHANGED(v20251230_2): 개인정보 모달은 footer로 통일
   const applyPrivacyBtn = document.getElementById("openPrivacyBtnApply");
   if (applyPrivacyBtn) {
@@ -368,23 +407,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   btn.addEventListener("click", async () => {
+    if (collectedPhotos.length < 2) {
+      return alert("본인 사진을 2장 이상 업로드해주세요.");
+    }
+
     const overlay = document.getElementById("loadingOverlay");
     try {
       btn.disabled = true;
       overlay.classList.remove("hidden");
 
-      const token = localStorage.getItem("token"); // ★ CHANGED(v20260206_3): 토큰은 있을 수도/없을 수도
+      const token = localStorage.getItem("token");
 
       const form = document.getElementById("applyForm");
       const formData = new FormData(form);
 
-      // ★ ADD(v20260206_3): 토큰이 있으면만 Authorization 헤더 추가
+      collectedPhotos.forEach(f => formData.append("photos", f));
+
       const headers = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const res = await fetch("/api/apply", {
         method: "POST",
-        headers, // ★ CHANGED(v20260206_3)
+        headers,
         body: formData,
       });
 
@@ -396,7 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       alert("✅ 신청이 완료되었습니다!");
-      // ★ CHANGED(v20260206_3): 결제 페이지로 이동
       location.href = `/pay/checkout.html?apply_seq=${data.apply_seq}`;
     } catch (e) {
       console.error(e);
