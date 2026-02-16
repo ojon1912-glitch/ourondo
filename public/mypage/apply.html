@@ -11,7 +11,7 @@
     // ★ ADD(v20251230_6): 로컬/배포 자동 구분 + R2 public 도메인 세팅
     (function () {
       const host = location.hostname || "";
-      const isProd = (host === "ourondo.fly.dev") || host.endsWith(".fly.dev");
+      const isProd = (host === "ourondo.com") || (host === "ourondo.fly.dev") || host.endsWith(".fly.dev");
       window.STORAGE_TYPE = isProd ? "r2" : "local";
       window.R2_PUBLIC_DOMAIN = "pub-2a82da3e11e64177a84a58a7c86a9cf0.r2.dev";
     })();
@@ -181,12 +181,23 @@ function payBadge(status) {
 }
 
 function refundBtn(item) {
+  if (item.is_confirmed === 1) return "";
   if (item.pay_status === "PA")
     return `<button onclick="adminRefund(${item.apply_seq})" class="text-xs bg-blue-600 px-3 py-1 rounded hover:bg-blue-700">환불</button>`;
   if (item.pay_status === "RR")
     return `<button onclick="adminRefund(${item.apply_seq})" class="text-xs bg-red-600 px-3 py-1 rounded hover:bg-red-700 border border-red-400 animate-pulse">환불 처리</button>`;
   if (item.pay_status === "RF")
     return `<span class="text-xs bg-gray-600 px-3 py-1 rounded text-gray-400">환불 완료</span>`;
+  return "";
+}
+
+function confirmBtn(item) {
+  if (item.is_confirmed === 1) {
+    return `<span class="px-2 py-0.5 rounded text-xs border bg-purple-500/20 text-purple-400 border-purple-500/40">참여확인됨</span>`;
+  }
+  if (item.flag === "PS" && item.pay_status === "PA") {
+    return `<button onclick="confirmParticipation(${item.apply_seq})" class="text-xs bg-purple-600 px-3 py-1.5 rounded hover:bg-purple-700">참여확인</button>`;
+  }
   return "";
 }
 
@@ -216,10 +227,11 @@ function renderList() {
   }
 
   container.innerHTML = filtered.map(item => `
-    <div class="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition">
-      <!-- 상단: 이름 + 뱃지 + 시간 -->
-      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-700 bg-zinc-800/80">
+    <div class="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition" data-expanded="false">
+      <!-- 상단: 이름 + 뱃지 + 시간 (클릭으로 토글) -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-700 bg-zinc-800/80 cursor-pointer select-none apply-header" onclick="toggleApplyCard(this)">
         <div class="flex items-center gap-3">
+          <span class="text-gray-500 text-xs apply-arrow">▶</span>
           <h2 class="text-lg font-bold">${item.name}</h2>
           ${flagBadge(item.flag)}
           ${payBadge(item.pay_status)}
@@ -227,7 +239,7 @@ function renderList() {
         <span class="text-xs text-gray-500">${formatKST(item.cre_dtime)}</span>
       </div>
 
-      <div class="px-5 py-4">
+      <div class="px-5 py-4 apply-detail" style="display:none;">
         <!-- 정보 그리드 -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-sm mb-4">
           <div><span class="text-gray-500">상품</span> <span class="ml-2">${productTypeText(item.product_type)}</span></div>
@@ -256,10 +268,21 @@ function renderList() {
           <button onclick="approve(${item.apply_seq})" class="text-xs bg-green-600 px-3 py-1.5 rounded hover:bg-green-700">수락</button>
           <button onclick="reject(${item.apply_seq})" class="text-xs bg-red-600 px-3 py-1.5 rounded hover:bg-red-700">거절</button>
           ${refundBtn(item)}
+          ${confirmBtn(item)}
         </div>
       </div>
     </div>
   `).join("");
+}
+
+function toggleApplyCard(headerEl) {
+  const card = headerEl.closest('[data-expanded]');
+  const detail = card.querySelector('.apply-detail');
+  const arrow = card.querySelector('.apply-arrow');
+  const expanded = card.dataset.expanded === 'true';
+  card.dataset.expanded = expanded ? 'false' : 'true';
+  detail.style.display = expanded ? 'none' : 'block';
+  arrow.textContent = expanded ? '▶' : '▼';
 }
 
 function approve(id) {
@@ -278,8 +301,26 @@ function reject(id) {
   }).then(() => location.reload());
 }
 
+function confirmParticipation(id) {
+  if (!confirm("참여확정 하시겠습니까?\n\n확정 후에는 환불이 불가능합니다.")) return;
+  fetch(`/api/admin/apply/${id}/confirm`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      alert("참여확인이 완료되었습니다.");
+      location.reload();
+    } else {
+      alert(data.error || "참여확인에 실패했습니다.");
+    }
+  })
+  .catch(() => alert("오류가 발생했습니다."));
+}
+
 async function adminRefund(id) {
-  if (!confirm("이 결제 건을 환불 처리하시겠습니까?\n이니시스 취소 API가 호출됩니다.")) return;
+  if (!confirm("환불 처리하시겠습니까?\n\n이니시스 취소 API가 호출되며, 이 작업은 되돌릴 수 없습니다.")) return;
   const btn = event.target;
   const origText = btn.textContent;
   btn.textContent = "처리중...";

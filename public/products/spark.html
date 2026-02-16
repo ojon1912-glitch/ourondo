@@ -89,7 +89,7 @@
       </div>
 
       <a href="/apply/spark_apply.html"
-         class="mt-6 text-3xl inline-block bg-pink-500 text-white  px-20 py-4 rounded-full hover:bg-pink-600">
+         class="mt-6 text-2xl sm:text-3xl inline-block bg-pink-500 text-white px-10 sm:px-20 py-4 rounded-full hover:bg-pink-600 w-full sm:w-auto text-center">
         신청하기
       </a>
     </div>
@@ -105,7 +105,7 @@
       <div class="flex justify-center">
 
       <a href="/apply/classic_apply.html"
-         class="mt-6 text-3xl inline-block rounded-full bg-pink-500 text-white  px-20 py-4  hover:bg-pink-600">
+         class="mt-6 text-2xl sm:text-3xl inline-block rounded-full bg-pink-500 text-white px-10 sm:px-20 py-4 hover:bg-pink-600 w-full sm:w-auto text-center">
         신청하기
       </a>
       </div>
@@ -113,6 +113,73 @@
 </section>
 
 
+
+<!-- 리뷰 섹션 -->
+<section class="max-w-5xl mx-auto px-2 py-14">
+  <h3 class="text-3xl font-bold mb-6 text-white text-center">참여 후기</h3>
+  <div id="reviewList" class="space-y-4"></div>
+  <p id="reviewEmpty" class="hidden text-gray-500 text-center py-8">아직 작성된 후기가 없습니다.</p>
+  <div id="reviewPagination" class="flex justify-center mt-6 space-x-2"></div>
+</section>
+
+<script>
+(async function loadReviews() {
+  const PRODUCT_TYPE = 2;
+  const PER_PAGE = 5;
+
+  function maskName(name) {
+    if (!name || name.length === 0) return "익명";
+    if (name.length === 1) return name;
+    if (name.length === 2) return name[0] + "*";
+    return name[0] + "*".repeat(name.length - 2) + name[name.length - 1];
+  }
+
+  function fmtDate(d) {
+    const dt = new Date(d);
+    return dt.getFullYear() + "." + (dt.getMonth() + 1) + "." + dt.getDate();
+  }
+
+  async function render(page) {
+    const res = await fetch("/api/review?product_type=" + PRODUCT_TYPE + "&page=" + page + "&limit=" + PER_PAGE);
+    const data = await res.json();
+    const list = document.getElementById("reviewList");
+    const pag = document.getElementById("reviewPagination");
+    const empty = document.getElementById("reviewEmpty");
+
+    if (data.total === 0) {
+      list.innerHTML = "";
+      pag.innerHTML = "";
+      empty.classList.remove("hidden");
+      return;
+    }
+    empty.classList.add("hidden");
+
+    list.innerHTML = data.reviews.map(function(r) {
+      return '<div class="bg-zinc-800 p-4 rounded-lg border border-zinc-700">'
+        + '<div class="flex justify-between items-center mb-2">'
+        + '<span class="font-semibold text-white">' + maskName(r.user_name || r.user_id) + '</span>'
+        + '<span class="text-xs text-gray-500">' + fmtDate(r.cre_dtime) + '</span>'
+        + '</div>'
+        + '<p class="text-gray-300">' + r.review_desc + '</p>'
+        + '</div>';
+    }).join("");
+
+    var totalPages = Math.ceil(data.total / PER_PAGE);
+    if (totalPages <= 1) { pag.innerHTML = ""; return; }
+    var btns = "";
+    for (var i = 1; i <= totalPages; i++) {
+      var cls = i === page
+        ? "px-3 py-1 rounded bg-pink-500 text-white"
+        : "px-3 py-1 rounded bg-zinc-700 text-gray-300 hover:bg-zinc-600";
+      btns += '<button onclick="window.__rvPage(' + i + ')" class="' + cls + '">' + i + '</button>';
+    }
+    pag.innerHTML = btns;
+  }
+
+  window.__rvPage = render;
+  render(1);
+})();
+</script>
 
 <!-- Footer -->
 <div id="footer"></div>

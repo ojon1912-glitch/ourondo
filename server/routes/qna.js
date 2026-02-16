@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 const optionalAuth = require("../middleware/optionalauth");
 
 // 1) QnA 전체 리스트
-router.get("/", qnaController.getList);
+router.get("/", optionalAuth, qnaController.getList);
 
 // 2) 내가 쓴 글 리스트 (⭐ 숫자보다 위에 있어야 함)
 router.get("/my", auth, qnaController.getMyList);

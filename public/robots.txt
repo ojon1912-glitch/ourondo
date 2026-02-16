@@ -1,5 +1,5 @@
-# ★ VERSION v20251230_2 (운영 도메인 ourondo.fly.dev 반영)
+# ★ VERSION v20251230_2 (운영 도메인 ourondo.com 반영)
 User-agent: *
 Disallow:
 
-Sitemap: https://ourondo.fly.dev/sitemap.xml
+Sitemap: https://ourondo.com/sitemap.xml

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>심쿵게이지 | 우리의 온도</title>
+  <meta name="description" content="심쿵게이지, 우리의 온도. 실시간 참여형 소개팅 게임입니다.">
+  <link rel="canonical" href="/products/gauge.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="심쿵게이지 | 우리의 온도">
+  <meta property="og:description" content="실시간 참여형 소개팅 게임, 심쿵게이지.">
+  <meta property="og:url" content="/products/gauge.html">
+  <meta property="og:image" content="/img/custom.jpg">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="bg-zinc-900 text-white">
+
+<!-- 공통 Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<!-- Page Container -->
+<section class="max-w-5xl mx-auto px-2 py-14">
+
+  <h2 class="text-4xl font-bold mb-8">
+    심쿵게이지
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+    <!-- Image -->
+    <div>
+      <img src="/img/custom.jpg" class="rounded-xl shadow-md" alt="심쿵게이지 이미지">
+    </div>
+
+    <!-- Details -->
+    <div class="space-y-6 text-center">
+      <p class="text-xl text-gray-200 leading-relaxed">
+        실시간 참여형 소개팅 게임<br/>심쿵게이지로 설렘을 측정해보세요!
+      </p>
+      <p class="text-xl text-gray-200 leading-relaxed">
+        테이블별로 모여 다양한 게임을 통해<br/>서로의 매력을 발견하세요
+      </p>
+
+      <p class="text-xl text-pink-200 leading-relaxed">
+        실시간 게임 진행<br/>닉네임 기반 블라인드 모드<br/>테이블 선택 시스템<br/>최종 선택으로 커플 매칭
+      </p>
+
+      <div class="text-xl font-bold text-pink-500">
+        가격: 40,000원
+      </div>
+
+      <a href="/apply/gauge_apply.html"
+         class="mt-6 text-2xl sm:text-3xl inline-block bg-pink-500 text-white px-10 sm:px-20 py-4 rounded-full hover:bg-pink-600 w-full sm:w-auto text-center">
+        신청하기
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+<!-- 모달 -->
+<script src="/js/privacy-modal.js"></script>
+
+<!-- body 설정 -->
+<script>
+  window.BODY_LAYOUT = {
+    theme: "dark",
+    bokeh: true
+  };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

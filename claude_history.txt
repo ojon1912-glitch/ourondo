@@ -1,0 +1,266 @@
+================================================================
+OURONDO 프로젝트 가이드 (Claude 참조용)
+최종 업데이트: 2025-02-14
+항상 해당 문서에 업데이트 하면서 작업할것.
+================================================================
+
+[1. 환경 정보]
+- 플랫폼: WSL2 (Linux) → Windows 위에서 실행
+- 작업 디렉토리: /mnt/c/ourondo
+- Node.js 서버 실행: Windows cmd에서 실행 (WSL이 아님)
+  cmd.exe /c "cd /d C:\ourondo && node server/server.js"
+- DB(PostgreSQL 18)는 Windows에 설치됨
+  WSL에서 직접 접근 불가 → Windows cmd 경유 필요
+  cmd.exe /c "cd /d C:\ourondo && node run_sql.js"
+
+[2. DB 접속 정보]
+- Host: localhost (Windows 기준)
+- Port: 5432
+- User: user01
+- Pass: user01
+- DB명: ourondo
+- .env 위치: /mnt/c/ourondo/.env
+
+[3. 기술 스택]
+- Backend: Node.js + Express 5.1.0
+- DB: PostgreSQL 18 (pg 8.16.3)
+- Auth: JWT (7일 만료) + Kakao OAuth
+- 결제: 이니시스(INIpay Standard)
+- 파일업로드: Multer (로컬 또는 Cloudflare R2)
+- Frontend: Vanilla JS + Tailwind CSS (CDN)
+- 보안: bcrypt 6.0.0
+
+[4. 핵심 디렉토리 구조]
+server/
+  server.js          ← Express 앱 진입점 (라우트 등록)
+  db.js              ← PostgreSQL 연결 (로컬/Fly.io 분기)
+  storage.js         ← 저장소 추상화 (local/r2)
+  r2.js              ← Cloudflare R2 설정
+  middleware/
+    auth.js          ← JWT 토큰 검증 (req.user 세팅)
+    optionalauth.js  ← JWT 옵션 (비회원 허용)
+    upload.js        ← Multer 파일 업로드 (최대 50MB)
+  controllers/
+    paycontroller.js ← 이니시스 결제 승인/취소
+  models/
+    applymodel.js    ← 신청 CRUD + 승인/거절/확인
+    paymodel.js      ← 결제 생성/승인/실패/환불
+    gaugemodel.js    ← 게이지 방/멤버/게임 전체 CRUD
+    pointmodel.js    ← 적립금 적립/사용/잔액
+    reviewmodel.js   ← 리뷰 생성/조회
+  routes/
+    auth.js          ← /api/auth (로그인/회원가입/카카오)
+    apply.js         ← /api/apply (신청)
+    pay.js           ← /api/pay (결제)
+    admin.js         ← /api/admin (관리자)
+    mypage.js        ← /api/mypage (마이페이지)
+    review.js        ← /api/review (리뷰)
+    gauge.js         ← /api/gauge (심쿵게이지)
+    qna.js           ← /api/qna (Q&A)
+    user.js          ← /api/user (카카오 로그인)
+  sql/
+    gauge_tables.sql ← 게이지 테이블 DDL
+
+public/
+  index.html                  ← 메인 랜딩
+  style.css                   ← 글로벌 스타일
+  components/
+    header.html, footer.html, privacy.html
+  js/
+    config.js, auth.js, authguard.js, authmodel.js
+    apply.js, apply-autofill.js, pay.js
+    layout.js, bodylayout.js, product.js, qna.js
+    privacy-modal.js, extra-info.js
+  auth/
+    login.html, signup.html, register.html
+    kakao-success.html, extra-info.html
+  products/
+    index.html, classic.html, spark.html, gauge.html
+  apply/
+    classic_apply.html, spark_apply.html, gauge_apply.html
+  pay/
+    checkout.html, result.html, close.html
+  mypage/
+    index.html, apply.html, userapply.html, mylist.html
+    password.html, delete.html
+    gauge.html           ← 게이지 로비 (방 목록)
+    gauge_room.html      ← 게이지 게임 룸 (헤더/푸터 없음, 게임UI)
+    gauge_steps/         ← 게임 단계별 JS 모듈
+      lobby.js, table_select.js, naming_image.js, nickname.js
+      game1_1.js, game1_2.js, talk1.js, hidden1.js
+      final1.js, final2.js, final3.js, final4.js
+
+[5. DB 테이블 목록]
+tm_user           ← 사용자 (user_seq PK, is_admin, flag)
+tm_apply          ← 신청 (apply_seq PK, product_type: 1=Classic 2=Spark 3=Gauge)
+tm_apply_files    ← 업로드 파일
+tm_pay            ← 결제 (oid PK, status: RD/PA/FA/RR/RF)
+tm_review         ← 리뷰
+tm_point          ← 적립금 내역
+tm_point_config   ← 상품별 적립금 설정
+tm_flag           ← 상태코드 정의 (table_name + flag_code)
+tm_qna / tm_qna_reply ← Q&A
+tm_gauge_room     ← 게이지 방 (room_seq PK, status, current_step, table_count)
+tm_gauge_member   ← 게이지 참여자 (member_seq PK, name, gender, nickname, table_no)
+tm_gauge_answer   ← 질문 답변 (answer_seq PK, question_no, answer_text)
+tm_gauge_score    ← 게이지 점수 (from_member→to_answer, gauge_amount, game_step)
+tm_gauge_hidden   ← 히든 게이징 선택 (from_member→to_member, +3 게이지)
+tm_gauge_message  ← 메세지 (from_member→to_member, message_text)
+tm_gauge_attendance ← 2차 참석 여부 (is_attend: 0/1)
+
+[6. 인증 흐름]
+- 로컬 로그인: POST /api/auth/login → JWT 발급
+- 카카오: GET /auth/kakao → 콜백 → JWT 발급 → kakao-success.html
+- 보호 API: Authorization: Bearer {token} 헤더
+- req.user = { user_seq, user_id, is_admin, ... }
+- is_admin=1 → 관리자, 그 외 → 일반유저
+
+[7. 결제 흐름]
+신청폼 → POST /api/apply → GET /api/pay/ready → checkout.html(이니시스)
+→ PC: POST /api/pay/return / 모바일: GET /api/pay/mobile-return
+→ result.html (결과표시)
+결제상태: RD(준비) → PA(완료) / FA(실패) / RR(환불요청) → RF(환불완료)
+상품가격: Classic=30000, Spark=40000, Gauge=40000
+
+[8. 게이지 게임 흐름]
+LOBBY → TABLE_SELECT → NAMING_IMAGE → NICKNAME
+→ GAME1_1(Q1,Q2 답변) → GAME1_2(게이지배분,최대7) → TALK1(대화시간) → HIDDEN1(히든게이징,+3)
+→ GAME2_1(라이어게임) → GAME2_2(Q3,Q4 답변) → GAME2_3(게이지배분) → TALK2(대화시간) → HIDDEN2(히든게이징)
+→ GAME3_1(Q5,Q6 답변) → GAME3_2(같은테이블 답변열람) → GAME3_3(Q7,Q8 답변) → GAME3_4(게이지배분) → TALK3(대화시간) → HIDDEN3(히든게이징)
+→ FINAL1(결과) → FINAL2(1위) → FINAL3(메세지) → FINAL4(참석) → CLOSED
+
+- gauge.html: 로비(방 목록, 방 생성) - 기존 헤더/푸터 사용
+- gauge_room.html: 게임 전용 UI (헤더/푸터 없음, 게임스타일)
+- gauge_steps/*.js: 각 단계별 독립 JS 파일 (동적 로딩)
+- 3초 폴링으로 실시간 상태 동기화
+- Admin은 모니터링+단계 전환, User는 참여
+- 게이지 계산: SUM(score.gauge_amount) + COUNT(hidden) × 3
+
+[9. API 엔드포인트 요약]
+-- 인증 불필요 --
+POST /api/auth/login, /signup
+GET  /api/auth/kakao, /kakao/callback
+POST /api/apply (optionalauth)
+GET  /api/pay/ready, POST /return, GET /mobile-return
+GET  /api/review
+
+-- 로그인 필요 --
+GET  /api/auth/me, /profile
+PUT  /api/auth/password
+GET  /api/mypage/apply, /point
+POST /api/mypage/apply/:id/refund
+POST /api/review
+GET  /api/gauge/rooms, /room/:id
+POST /api/gauge/room/:id/join, /leave, /nickname, /table
+POST /api/gauge/room/:id/answer
+GET  /api/gauge/room/:id/answers, /game-answers, /my-talk-data
+POST /api/gauge/room/:id/gauge-score
+GET  /api/gauge/room/:id/hidden-targets
+POST /api/gauge/room/:id/hidden-select
+GET  /api/gauge/room/:id/gauge-totals, /gauge-top
+GET  /api/gauge/room/:id/message-targets, /my-messages
+POST /api/gauge/room/:id/message, /attendance
+
+-- 관리자 전용 --
+GET  /api/admin/apply
+POST /api/admin/apply/:id/approve, /reject, /refund, /confirm
+GET  /api/admin/users
+PATCH /api/admin/user/:id/flag
+POST /api/admin/user/:id/point
+POST /api/gauge/room (방생성)
+POST /api/gauge/room/:id/step, /table-count, /close
+POST /api/gauge/room/:id/kick/:member_seq
+GET  /api/gauge/room/:id/gauge-scores, /hidden-status, /messages, /attendance
+
+[10. 개발 이력]
+2025-01-xx  initial commit: 백엔드+프론트엔드 기본 구조
+2025-02-06  feat: 이니시스 결제 연동 + 비회원 신청 허용
+2025-02-xx  feat: 환불 기능 + 모바일 결제 지원 + 관리자 페이지 개선
+2025-02-xx  feat: 사진 업로드 누적 방식으로 변경
+2025-02-12  feat: 심쿵게이지 전체 구현
+            - DB 7개 테이블 (room, member, answer, score, hidden, message, attendance)
+            - 백엔드 모델 30+ 메소드, 라우트 30+ 엔드포인트
+            - 프론트엔드 분리 구조 (gauge.html→로비, gauge_room.html→게임)
+            - 12개 단계별 JS 모듈 (gauge_steps/)
+2025-02-12  fix: admin apply.html 참여확정 시 환불버튼 숨김 + 팝업 문구 개선
+2025-02-12  fix: paycontroller.js SITE_DOMAIN 자동감지 (요청 헤더 기반 fallback)
+2025-02-12  fix: .env에 PRICE_GAUGE=40000 추가
+2025-02-12  fix: paycontroller.js postForm() HTTP/HTTPS 양쪽 지원
+            - 이니시스 모바일 P_REQ_URL이 HTTP일 때 승인 요청 실패하던 버그 수정
+            - http 모듈 추가, URL 프로토콜 기반 자동 분기
+2025-02-12  fix: 리뷰 표시를 아이디→이름(마스킹) 변경 (김*식)
+            - reviewmodel.js: LEFT JOIN tm_user로 name 가져오기
+            - classic.html, spark.html: maskId→maskName 변경
+2025-02-12  fix: 모바일 UI 전체 개선 (gauge 중심)
+            - 전체 신청하기 버튼 px-20→반응형(px-10 sm:px-20, w-full sm:w-auto)
+            - gauge_room.html: 입장 prompt()→인라인 폼(성별 버튼 선택)
+            - gauge_room.html: 관리자 단계 버튼 터치 영역 확대(min-h-[36px])
+            - gauge.html: 로비 방 카드 truncate + 버튼 shrink-0
+            - gauge_steps: 테이블 그리드 2열→반응형, 히든 라디오 확대
+            - gauge_steps: FINAL2 수상자 1열→반응형, FINAL4 참석 버튼 flex-1
+            - 모든 btn-primary/secondary min-height:48px 보장
+2025-02-14  feat: 관리자 사용자 관리 기능 추가
+            - public/mypage/users.html 신규 생성 (사용자 목록/검색/필터/flag변경/적립금부여)
+            - public/mypage/index.html에 관리자용 "사용자 관리" 버튼 추가
+            - server/models/usermodel.js: getAllUsers(), updateUserFlag() 메소드 추가
+            - server/models/pointmodel.js: adminEarnPoint() 메소드 추가 (apply_seq=NULL)
+            - server/routes/admin.js: GET /users, PATCH /user/:id/flag, POST /user/:id/point 추가
+            - flag 변경: 활성화(AA)/삭제(DD)만 허용, 삭제 시 이중 확인 팝업
+            - 자기 자신 flag 변경 차단, 적립금 1회 최대 100,000원 제한
+2025-02-14  feat: 2월 14일 업데이트 구현
+            - Part1: mypage/apply.html 접기/펼치기 UI 추가
+            - Part1: mypage/users.html 적립금 차감 기능 추가
+            - Part2: game1_2 닉네임별 게이지 방식으로 변경 (to_member_seq)
+            - Part2: hidden1/final3 "없음" 옵션 추가
+            - Part2: 폴링 최적화 (_userDone 플래그)
+            - Part2: 관리자 닉네임 수정 기능 추가
+            - Part3: Game2 추가 (GAME2_1 라이어게임, GAME2_2 Q3/Q4, GAME2_3 게이지배분, TALK2, HIDDEN2)
+            - Part3: Game3 추가 (GAME3_1 Q5/Q6, GAME3_2 같은테이블 열람, GAME3_3 Q7/Q8, GAME3_4 게이지배분, TALK3, HIDDEN3)
+            - DB: tm_gauge_score에 to_member_seq 추가, tm_gauge_hidden에 game_step 추가
+            - DB: tm_gauge_liar 테이블 신규 생성
+            - 백엔드: gaugemodel.js 30+ 메소드 확장, gauge.js 라우트 추가
+            - 프론트: gauge_steps/ 11개 신규 JS 파일 생성
+            - gauge_room.html STEPS 배열 23단계로 확장
+2025-02-14  fix: 심쿵게이지 버그 6건 수정
+            [이슈1] 로비 관리자 강퇴 시 무반응
+            - gauge_room.html: kickMember에 try/catch + 성공/실패 alert 추가
+            - gauge_room.html: 강퇴된 사용자 감지 (myMember=null 시 안내 화면)
+            [이슈2] 3초 폴링으로 닉네임 입력 초기화
+            - gauge_steps/nickname.js: 입력 중 re-render 방지 가드 추가
+            [이슈3~6] game1_1/hidden1/final3/final4 서버 에러
+            - 근본 원인: 프로덕션 DB에 게임 데이터 테이블 미생성
+              (tm_gauge_answer, tm_gauge_score, tm_gauge_hidden, tm_gauge_message, tm_gauge_attendance)
+            - gauge_tables.sql DDL을 Fly.io 프로덕션 DB에 수동 실행하여 해결
+            - gaugemodel.js: 4개 함수 DELETE+INSERT → UPSERT 패턴으로 개선
+              submitAnswers: ON CONFLICT (room_seq, member_seq, question_no)
+              submitHiddenSelection: ON CONFLICT (room_seq, from_member_seq)
+              sendMessage: ON CONFLICT (room_seq, from_member_seq)
+              submitAttendance: ON CONFLICT (room_seq, member_seq)
+
+[11. 배포 환경 (Fly.io)]
+- fly.toml: app=ourondo, region=sin, port=8080, force_https=true
+- 기본 URL: https://ourondo.fly.dev (또는 커스텀 도메인 ourondo.com)
+- 환경변수는 fly secrets set 으로 설정
+- 배포: fly deploy
+
+[12. 결제 연동 주의사항 (이니시스)]
+- 현재 상태: 이니시스 실서비스 심사 중 (2025-02-12 기준)
+  → 심사 완료 전까지 배포 환경(ourondo.com) 결제 불가
+  → 로컬(localhost)에서만 테스트 결제 가능 (INIpayTest MID)
+- 테스트 MID (INIpayTest)는 localhost에서만 동작함
+  → ourondo.com에서는 이니시스 SDK가 도메인 검증 실패로 결제창 미오픈
+- 심사 완료 후 할 일:
+  fly secrets set INICIS_MID=실서비스MID INICIS_SIGNKEY=실서비스SignKey INICIS_INIAPI_KEY=환불API키 SITE_DOMAIN=https://ourondo.com
+- SITE_DOMAIN 미설정 시 요청 헤더(x-forwarded-proto, host)에서 자동 감지
+- returnUrl/mobileReturnUrl은 HTTPS 필수 (Fly.io force_https=true이므로 OK)
+
+[13. 주의사항]
+- WSL에서 Windows DB 직접 접근 불가 → cmd.exe /c "cd /d C:\ourondo && node 스크립트.js"
+- Express 5.x 사용 중 (4.x와 문법 차이 있음)
+- 프론트엔드는 SPA 아님, 각 HTML이 독립 페이지
+- 공통 헤더/푸터는 fetch로 components/ 에서 동적 로드
+- Tailwind CSS는 CDN 사용 (빌드 없음)
+- gauge_room.html은 헤더/푸터 없이 게임 전용 UI
+- gauge_steps/*.js는 window.render_{STEP} 함수로 노출, gauge_room.html에서 동적 로드
+- 이미지 업로드 기능(NAMING_IMAGE, TALK1)은 추후 구현 예정
+- Game 2,3은 구현 완료, Game 4는 추후 개발 (현재 skip)

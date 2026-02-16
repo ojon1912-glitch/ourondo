@@ -48,6 +48,12 @@
        class="hidden block bg-indigo-600 p-4 rounded-lg shadow hover:bg-indigo-700 transition text-white font-bold">
       🛠️ 지원자 관리
     </a>
+    <!-- 관리자 전용: 사용자 관리 -->
+    <a href="/mypage/users.html"
+       id="adminUsersBtn"
+       class="hidden block bg-emerald-600 p-4 rounded-lg shadow hover:bg-emerald-700 transition text-white font-bold">
+      👥 사용자 관리
+    </a>
     <a href="/mypage/userapply.html"
      class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white">
       📄 지원 내역
@@ -62,12 +68,16 @@
        class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white">
       📝 내가 쓴 QnA
     </a>
-
+    <a href="/mypage/gauge.html"
+       class="block bg-pink-600 p-4 rounded-lg shadow hover:bg-pink-700 transition text-white font-bold">
+      심쿵게이지 입장
+    </a>
+<!--
     <a href="/mypage/payments.html"
        class="block bg-black p-4 rounded-lg shadow hover:bg-gray-900 transition text-white" onclick="return false;">
       💳 결제 내역 (준비중)
     </a>
-
+-->
 
 <!-- 우측 하단 회원탈퇴 -->
 <div class="flex justify-end mt-10 ">
@@ -121,6 +131,7 @@
     // 🔥 관리자면 지원자 관리 버튼 표시
     if (user.is_admin === 1) {
       document.getElementById("adminApplyBtn").classList.remove("hidden");
+      document.getElementById("adminUsersBtn").classList.remove("hidden");
     }
 
   } catch (err) {

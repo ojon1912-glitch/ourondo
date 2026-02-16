@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>심쿵게이지 - 우리의 온도</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="bg-zinc-900 text-white min-h-screen">
+
+<!-- Header -->
+<div id="header"></div>
+<script src="/js/layout.js"></script>
+<script>
+  fetch("/components/header.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("header").innerHTML = html;
+      initHeader();
+      applyLoginState();
+    });
+</script>
+
+<main class="max-w-2xl mx-auto px-3 py-10">
+
+  <h1 class="text-3xl font-bold mb-6">심쿵게이지</h1>
+
+  <!-- 관리자: 방 생성 -->
+  <div id="adminCreateRoom" class="hidden mb-6">
+    <div class="flex flex-col sm:flex-row gap-2">
+      <input id="roomTitle" type="text" placeholder="방 제목 입력"
+        class="flex-1 p-3 rounded-lg bg-zinc-800 border border-zinc-700 min-h-[48px]" />
+      <button id="createRoomBtn"
+        class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-bold min-h-[48px] shrink-0">
+        방 만들기
+      </button>
+    </div>
+  </div>
+
+  <h2 class="text-xl font-semibold mb-4">열린 방 목록</h2>
+  <div id="roomList" class="space-y-3"></div>
+  <p id="roomEmpty" class="hidden text-gray-500 text-center py-8">생성된 방이 없습니다.</p>
+
+</main>
+
+<!-- Footer -->
+<div id="footer"></div>
+<script>
+  fetch("/components/footer.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("footer").innerHTML = html);
+</script>
+
+<script src="/js/privacy-modal.js"></script>
+
+<script>
+(function() {
+  var token = localStorage.getItem("token");
+  if (!token) { alert("로그인이 필요합니다."); location.href = "/auth/login.html"; return; }
+
+  var headers = { Authorization: "Bearer " + token, "Content-Type": "application/json" };
+
+  function parseJWT(t) {
+    try { return JSON.parse(atob(t.split(".")[1])); } catch(e) { return null; }
+  }
+  var currentUser = parseJWT(token);
+  var isAdmin = currentUser && currentUser.is_admin === 1;
+
+  if (isAdmin) document.getElementById("adminCreateRoom").classList.remove("hidden");
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  async function loadRooms() {
+    try {
+      var res = await fetch("/api/gauge/rooms", { headers: headers });
+      if (!res.ok) throw new Error();
+      var rooms = await res.json();
+      var list = document.getElementById("roomList");
+      var empty = document.getElementById("roomEmpty");
+
+      if (rooms.length === 0) { list.innerHTML = ""; empty.classList.remove("hidden"); return; }
+      empty.classList.add("hidden");
+
+      list.innerHTML = rooms.map(function(r) {
+        var statusLabel = r.status === "WAIT" ? "대기중" : r.status === "PLAYING" ? "진행중" : r.status;
+        var statusColor = r.status === "WAIT" ? "text-green-400" : "text-yellow-400";
+        return '<div class="p-4 bg-zinc-800 rounded-lg border border-zinc-700">'
+          + '<div class="flex items-center justify-between gap-3">'
+          + '<div class="min-w-0 flex-1">'
+          + '<div class="font-bold text-lg truncate">' + escapeHtml(r.title) + '</div>'
+          + '<div class="text-sm text-gray-400">'
+          + '<span class="' + statusColor + '">' + statusLabel + '</span>'
+          + ' | ' + (r.creator_name || "관리자")
+          + '</div></div>'
+          + '<button onclick="location.href=\'/mypage/gauge_room.html?room=' + r.room_seq + '\'"'
+          + ' class="bg-pink-500 hover:bg-pink-600 px-5 py-2.5 rounded-lg font-bold shrink-0 min-h-[44px]">입장</button>'
+          + '</div></div>';
+      }).join("");
+    } catch(e) { console.error(e); }
+  }
+
+  document.getElementById("createRoomBtn").addEventListener("click", async function() {
+    var title = document.getElementById("roomTitle").value.trim();
+    if (!title) return alert("방 제목을 입력해주세요.");
+    try {
+      var res = await fetch("/api/gauge/room", {
+        method: "POST", headers: headers,
+        body: JSON.stringify({ title: title })
+      });
+      if (!res.ok) { var d = await res.json(); return alert(d.error || "방 생성 실패"); }
+      document.getElementById("roomTitle").value = "";
+      loadRooms();
+    } catch(e) { alert("서버 오류"); }
+  });
+
+  loadRooms();
+})();
+</script>
+
+<script>
+  window.BODY_LAYOUT = { theme: "dark", bokeh: true };
+</script>
+<script src="/js/bodylayout.js"></script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const applymodel = require("../models/applymodel");
 const Pay = require("../models/paymodel");
+const Point = require("../models/pointmodel");
 
 router.get("/apply", auth, async (req, res) => {
   const userSeq = req.user.user_seq;
@@ -32,6 +33,17 @@ router.post("/apply/:id/refund", auth, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("환불 신청 오류:", err);
+    res.status(500).json({ error: "서버 오류" });
+  }
+});
+
+// 적립금 잔액 조회
+router.get("/point", auth, async (req, res) => {
+  try {
+    const balance = await Point.getBalance(req.user.user_seq);
+    res.json({ balance });
+  } catch (err) {
+    console.error("적립금 조회 오류:", err);
     res.status(500).json({ error: "서버 오류" });
   }
 });

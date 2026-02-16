@@ -2,10 +2,12 @@
 
 const crypto = require("crypto");
 const https = require("https");
+const http = require("http");
 const querystring = require("querystring");
 
 const Pay = require("../models/paymodel");
 const Apply = require("../models/applymodel");
+const Point = require("../models/pointmodel");
 
 function sha256Hex(str) {
   return crypto.createHash("sha256").update(str, "utf8").digest("hex");
@@ -28,10 +30,12 @@ function postForm(url, data) {
     try {
       const parsed = new URL(url);
       const body = querystring.stringify(data);
+      const transport = parsed.protocol === "http:" ? http : https;
 
-      const req = https.request(
+      const req = transport.request(
         {
           hostname: parsed.hostname,
+          port: parsed.port || (parsed.protocol === "http:" ? 80 : 443),
           path: parsed.pathname + (parsed.search || ""),
           method: "POST",
           headers: {
@@ -81,17 +85,42 @@ exports.ready = async (req, res) => {
     // 상품/금액: 운영값은 env로 고정 (추측 금지)
     const priceClassic = Number(process.env.PRICE_CLASSIC || 0);
     const priceSpark = Number(process.env.PRICE_SPARK || 0);
+    const priceGauge = Number(process.env.PRICE_GAUGE || 40000);
 
     const product_type = Number(apply.product_type);
-    const price =
-      product_type === 1 ? priceClassic : product_type === 2 ? priceSpark : 0;
+    const originalPrice =
+      product_type === 1 ? priceClassic
+        : product_type === 2 ? priceSpark
+        : product_type === 3 ? priceGauge
+        : 0;
 
-    if (!price || price <= 0) {
+    if (!originalPrice || originalPrice <= 0) {
       return res.status(400).json({
         error:
-          "상품 금액 설정 필요(PRICE_CLASSIC/PRICE_SPARK). 카드심사/운영을 위해 0원 불가",
+          "상품 금액 설정 필요(PRICE_CLASSIC/PRICE_SPARK/PRICE_GAUGE). 카드심사/운영을 위해 0원 불가",
       });
     }
+
+    // 적립금 차감 처리
+    let usedPoint = 0;
+    const usePointReq = Number(req.query.use_point) || 0;
+    const user_seq = apply.user_seq || (req.user ? req.user.user_seq : null);
+
+    if (usePointReq > 0 && user_seq) {
+      const balance = await Point.getBalance(user_seq);
+      usedPoint = Math.min(usePointReq, balance, originalPrice - 1); // 최소 1원은 결제
+      if (usedPoint > 0) {
+        const productLabel = product_type === 1 ? "Classic" : product_type === 2 ? "Spark" : product_type === 3 ? "Gauge" : "기타";
+        await Point.usePoint({
+          user_seq,
+          apply_seq: apply_seq,
+          amount: usedPoint,
+          description: `결제 시 적립금 사용 (${productLabel})`
+        });
+      }
+    }
+
+    const price = originalPrice - usedPoint;
 
     const timestamp = Date.now().toString();
     const oid = `ourondo_${apply_seq}_${timestamp}`.slice(0, 40);
@@ -114,10 +143,17 @@ exports.ready = async (req, res) => {
       timestamp: timestamp,
     });
 
-    // 결제 결과를 받을 URL(동일 도메인 권장) :contentReference[oaicite:5]{index=5}
-    const siteDomain = process.env.SITE_DOMAIN; // 예: https://ourondo.com
+    // 결제 결과를 받을 URL(동일 도메인 권장)
+    // SITE_DOMAIN이 없으면 요청 헤더에서 자동 감지
+    let siteDomain = process.env.SITE_DOMAIN;
     if (!siteDomain) {
-      return res.status(400).json({ error: "SITE_DOMAIN 환경변수 필요" });
+      const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+      const host = req.headers["x-forwarded-host"] || req.headers.host;
+      if (host) {
+        siteDomain = `${proto}://${host}`;
+      } else {
+        return res.status(400).json({ error: "SITE_DOMAIN 환경변수 필요" });
+      }
     }
 
     const returnUrl = `${siteDomain}/api/pay/return`;
@@ -149,9 +185,12 @@ exports.ready = async (req, res) => {
       returnUrl,
       mobileReturnUrl,
       closeUrl,
+      // 적립금 정보
+      originalPrice: String(originalPrice),
+      usedPoint: usedPoint,
       // 표시용
       goodname:
-        product_type === 1 ? "ourondo Classic" : product_type === 2 ? "ourondo Spark" : "ourondo",
+        product_type === 1 ? "ourondo Classic" : product_type === 2 ? "ourondo Spark" : product_type === 3 ? "ourondo Gauge" : "ourondo",
       buyername: apply.name,
       buyertel: apply.contact,
       buyeremail: process.env.DEFAULT_BUYER_EMAIL || "no-reply@ourondo.com",

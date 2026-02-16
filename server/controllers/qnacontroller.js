@@ -1,12 +1,29 @@
 const Qna = require("../models/qnamodel");
 
+// 이름 마스킹 (김영식 → 김*식, 김영 → 김*, 김영식이 → 김**이)
+function maskName(name) {
+  if (!name) return "익명";
+  const len = name.length;
+  if (len <= 1) return name;
+  if (len === 2) return name[0] + "*";
+  return name[0] + "*".repeat(len - 2) + name[len - 1];
+}
+
 // =============================
 // QnA 리스트
 // =============================
 exports.getList = async (req, res) => {
   try {
     const result = await Qna.getQnaList();
-    res.json(result.rows);
+    const isAdmin = req.user && Number(req.user.is_admin) === 1;
+
+    const rows = result.rows.map(row => ({
+      ...row,
+      user_name: isAdmin ? row.user_name : maskName(row.user_name),
+      user_id: isAdmin ? row.user_id : maskName(row.user_id)
+    }));
+
+    res.json(rows);
   } catch (err) {
     console.error("QnA 리스트 오류:", err);
     res.status(500).json({ error: "QnA 리스트 조회 중 서버 오류" });
@@ -36,7 +53,7 @@ const isAdmin = tokenUser && Number(tokenUser.is_admin) === 1;  // 🔥 타입 �
 if (data.is_secret === 1 && !(isMine || isAdmin)) {
   return res.json({
     qna_seq: data.qna_seq,
-    title: data.title,
+    title: "비밀글입니다.",
     content: "비밀글입니다.",
     user_name: data.user_name,
     user_id: data.user_id,
@@ -51,6 +68,16 @@ if (data.is_secret === 1 && !(isMine || isAdmin)) {
 
     // 답변 로드
     const replyResult = await Qna.getReplies(qna_seq);
+
+    // 관리자가 아니면 이름 마스킹
+    if (!isAdmin) {
+      data.user_name = maskName(data.user_name);
+      data.user_id = maskName(data.user_id);
+      replyResult.rows.forEach(r => {
+        r.user_name = maskName(r.user_name);
+        r.user_id = maskName(r.user_id);
+      });
+    }
 
     return res.json({
       ...data,

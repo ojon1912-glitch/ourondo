@@ -76,6 +76,7 @@ module.exports = {
         a.message,
         a.cre_dtime,
         a.flag,
+        a.is_confirmed,
         p.status AS pay_status,
         p.oid,
         COALESCE(
@@ -103,6 +104,7 @@ module.exports = {
         a.source,
         a.message,
         a.flag,
+        a.is_confirmed,
         a.cre_dtime,
         p.status,
         p.oid
@@ -146,10 +148,13 @@ module.exports = {
         a.product_type,
         a.apply_date,
         a.flag,
+        a.is_confirmed,
         p.status AS pay_status,
-        p.oid
+        p.oid,
+        CASE WHEN rv.review_seq IS NOT NULL THEN true ELSE false END AS has_review
       FROM tm_apply a
       LEFT JOIN tm_pay p ON a.apply_seq = p.apply_seq
+      LEFT JOIN tm_review rv ON a.apply_seq = rv.apply_seq AND rv.flag = 1
       WHERE a.user_seq = $1
       ORDER BY a.apply_date DESC, a.cre_dtime DESC
       `,
@@ -157,5 +162,13 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  // 8️⃣ 관리자: 참여확인
+  async confirmApply(applySeq) {
+    await db.query(
+      `UPDATE tm_apply SET is_confirmed = 1, confirmed_dtime = now() WHERE apply_seq = $1`,
+      [applySeq]
+    );
   }
 };

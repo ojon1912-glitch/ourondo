@@ -1,4 +1,4 @@
-// ★ VERSION v20260208_1 (PC/모바일 자동 분기 결제)
+// ★ VERSION v20260211_1 (적립금 사용 기능 추가)
 
 function isMobile() {
   return /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|Opera Mini|IEMobile/i.test(
@@ -15,21 +15,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pcForm = document.getElementById("SendPayForm_id");
   const mobileForm = document.getElementById("MobilePayForm");
 
+  const pointArea = document.getElementById("pointArea");
+  const pointBalanceEl = document.getElementById("pointBalance");
+  const usePointCheck = document.getElementById("usePointCheck");
+
   if (!apply_seq) {
     alert("apply_seq가 없습니다.");
     location.href = "/";
     return;
   }
 
-  async function ready() {
-    const token = localStorage.getItem("token");
-    const headers = {};
-    if (token) headers.Authorization = `Bearer ${token}`;
+  const token = localStorage.getItem("token");
+  const headers = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
 
-    const res = await fetch(
-      `/api/pay/ready?apply_seq=${encodeURIComponent(apply_seq)}`,
-      { headers }
-    );
+  // 적립금 잔액 조회
+  let myPointBalance = 0;
+  if (token) {
+    try {
+      const pRes = await fetch("/api/mypage/point", { headers });
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        myPointBalance = pData.balance || 0;
+      }
+    } catch (e) { /* 비회원이면 무시 */ }
+  }
+
+  if (myPointBalance > 0) {
+    pointArea.classList.remove("hidden");
+    pointBalanceEl.textContent = myPointBalance.toLocaleString();
+  }
+
+  async function ready(usePoint) {
+    let url = `/api/pay/ready?apply_seq=${encodeURIComponent(apply_seq)}`;
+    if (usePoint > 0) url += `&use_point=${usePoint}`;
+
+    const res = await fetch(url, { headers });
     const data = await res.json();
 
     if (!res.ok) {
@@ -37,12 +58,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error(data.error || "ready failed");
     }
 
-    // 표시
+    // 결제 정보 표시
+    const origPrice = Number(data.originalPrice);
+    const usedPt = Number(data.usedPoint) || 0;
+    const finalPrice = Number(data.price);
+
+    let priceHtml = `<div class="text-lg font-semibold mt-1">${finalPrice.toLocaleString()}원</div>`;
+    if (usedPt > 0) {
+      priceHtml = `
+        <div class="text-sm text-white/50 line-through mt-1">${origPrice.toLocaleString()}원</div>
+        <div class="text-xs text-green-400">적립금 -${usedPt.toLocaleString()}원</div>
+        <div class="text-lg font-semibold text-green-300">${finalPrice.toLocaleString()}원</div>
+      `;
+    }
+
     payInfo.innerHTML = `
       <div class="text-sm text-white/70">상품</div>
       <div class="text-lg font-semibold mt-1">${data.goodname}</div>
       <div class="text-sm text-white/70 mt-4">금액</div>
-      <div class="text-lg font-semibold mt-1">${Number(data.price).toLocaleString()}원</div>
+      ${priceHtml}
       <div class="text-xs text-white/50 mt-3">주문번호: ${data.oid}</div>
     `;
 
@@ -74,9 +108,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     return data;
   }
 
+  // 적립금 체크박스 변경 시 ready 재호출
+  if (usePointCheck) {
+    usePointCheck.addEventListener("change", async () => {
+      try {
+        payBtn.disabled = true;
+        const usePoint = usePointCheck.checked ? myPointBalance : 0;
+        readyData = await ready(usePoint);
+        payBtn.disabled = false;
+      } catch (e) {
+        console.error(e);
+        payBtn.disabled = false;
+      }
+    });
+  }
+
   let readyData = null;
   try {
-    readyData = await ready();
+    readyData = await ready(0);
   } catch (e) {
     console.error(e);
     return;

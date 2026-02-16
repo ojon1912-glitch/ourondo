@@ -102,6 +102,40 @@ async deleteUser(user_seq) {
     `,
     [user_seq]
   );
-}
+},
+
+  // 관리자: 전체 사용자 조회 (flag 무관, 검색/필터 지원)
+  async getAllUsers({ search, flag }) {
+    let sql = `
+      SELECT user_seq, user_id, user_name, name, phone, gender, birth_year,
+             is_admin, is_kakao, login_type, flag, cre_dtime
+      FROM tm_user
+      WHERE 1=1
+    `;
+    const params = [];
+    let idx = 1;
+
+    if (flag) {
+      sql += ` AND flag = $${idx++}`;
+      params.push(flag);
+    }
+
+    if (search) {
+      sql += ` AND (user_id ILIKE $${idx} OR user_name ILIKE $${idx} OR name ILIKE $${idx} OR phone ILIKE $${idx})`;
+      params.push(`%${search}%`);
+      idx++;
+    }
+
+    sql += ` ORDER BY user_seq DESC`;
+    return client.query(sql, params);
+  },
+
+  // 관리자: 사용자 flag 변경
+  async updateUserFlag(user_seq, flag) {
+    return client.query(
+      `UPDATE tm_user SET flag = $1 WHERE user_seq = $2`,
+      [flag, user_seq]
+    );
+  }
 
 };

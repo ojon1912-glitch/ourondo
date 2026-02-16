@@ -86,6 +86,12 @@ app.use("/api/admin", require("./routes/admin"));
 // mypage
 app.use("/api/mypage", require("./routes/mypage"));
 
+// review
+app.use("/api/review", require("./routes/review"));
+
+// gauge (심쿵게이지)
+app.use("/api/gauge", require("./routes/gauge"));
+
 // ===============================
 // Health check
 // ===============================
