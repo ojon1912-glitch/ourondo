@@ -55,8 +55,8 @@ if (data.is_secret === 1 && !(isMine || isAdmin)) {
     qna_seq: data.qna_seq,
     title: "비밀글입니다.",
     content: "비밀글입니다.",
-    user_name: data.user_name,
-    user_id: data.user_id,
+    user_name: maskName(data.user_name),
+    user_id: maskName(data.user_id),
     cre_dtime: data.cre_dtime,
     is_secret: 1,
     replies: []

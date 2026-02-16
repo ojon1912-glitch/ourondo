@@ -116,8 +116,8 @@ function flagButtons(user) {
   const btns = [];
   if (user.flag !== "AA") btns.push(`<button onclick="changeFlag(${user.user_seq}, 'AA')" class="text-xs bg-green-600 px-3 py-1.5 rounded hover:bg-green-700 min-h-[36px]">활성화</button>`);
   if (user.flag !== "DD") btns.push(`<button onclick="changeFlag(${user.user_seq}, 'DD')" class="text-xs bg-red-600 px-3 py-1.5 rounded hover:bg-red-700 min-h-[36px]">삭제</button>`);
-  btns.push(`<button onclick="openPointModal(${user.user_seq}, '${(user.user_name || "").replace(/'/g, "\\'")}')" class="text-xs bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 min-h-[36px]">적립금 부여</button>`);
-  btns.push(`<button onclick="openPointModal(${user.user_seq}, '${(user.user_name || "").replace(/'/g, "\\'")}', 'deduct')" class="text-xs bg-orange-600 px-3 py-1.5 rounded hover:bg-orange-700 min-h-[36px]">적립금 차감</button>`);
+  btns.push(`<button onclick="openPointModal(${user.user_seq}, '${(user.name || "").replace(/'/g, "\\'")}')" class="text-xs bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 min-h-[36px]">적립금 부여</button>`);
+  btns.push(`<button onclick="openPointModal(${user.user_seq}, '${(user.name || "").replace(/'/g, "\\'")}', 'deduct')" class="text-xs bg-orange-600 px-3 py-1.5 rounded hover:bg-orange-700 min-h-[36px]">적립금 차감</button>`);
   return btns.join("\n");
 }
 
@@ -187,7 +187,7 @@ function renderList() {
     <div class="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition">
       <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-700 bg-zinc-800/80">
         <div class="flex items-center gap-3 flex-wrap">
-          <h2 class="text-lg font-bold">${user.user_name || "-"}</h2>
+          <h2 class="text-lg font-bold">${user.name || "-"}</h2>
           ${userFlagBadge(user.flag)}
           ${loginTypeBadge(user.login_type)}
           ${user.is_admin === 1 ? `<span class="px-2 py-0.5 rounded text-xs border bg-purple-500/20 text-purple-400 border-purple-500/40">관리자</span>` : ""}

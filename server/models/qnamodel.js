@@ -9,7 +9,7 @@ module.exports = {
         q.title,
         q.cre_dtime,
         q.is_secret,
-        u.user_name,
+        u.name AS user_name,
         u.user_id
       FROM tm_qna q
       LEFT JOIN tm_user u ON q.user_seq = u.user_seq
@@ -29,7 +29,7 @@ module.exports = {
         q.content,
         q.cre_dtime,
         q.is_secret,
-        u.user_name,
+        u.name AS user_name,
         u.user_id
       FROM tm_qna q
       LEFT JOIN tm_user u ON q.user_seq = u.user_seq
@@ -63,7 +63,7 @@ module.exports = {
         r.qna_reply_seq,
         r.content,
         r.cre_dtime,
-        u.user_name,
+        u.name AS user_name,
         u.user_id
       FROM tm_qna_reply r
       LEFT JOIN tm_user u ON r.user_seq = u.user_seq
